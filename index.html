@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Baby Checklist — First-Time Parent Essentials</title>
+
+  <!-- PWA & Mobile Meta -->
+  <meta name="theme-color" content="#6c63ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Baby Checklist">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="First-time parent essentials checklist — track everything you need for baby and hospital bag.">
+
+  <link rel="icon" type="image/png" href="concept_c_transparent.png">
+  <link rel="apple-touch-icon" href="concept_c_transparent.png">
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Sticky Header ─────────────────────────────────────── -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo">
+          <span class="logo-icon">🍼</span>
+          <div>
+            <h1>Baby Checklist</h1>
+            <p class="tagline">Everything you need for your little one</p>
+          </div>
+        </div>
+        <div class="section-tabs" id="sectionTabs">
+          <button class="tab active" data-section="newborn-essentials">👶 Newborn Essentials</button>
+          <button class="tab" data-section="hospital-bag">🏥 Hospital Bag</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Hero Section ──────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-ring">
+          <svg class="hero-ring-svg" viewBox="0 0 120 120" width="120" height="120">
+            <circle class="hero-ring-bg" cx="60" cy="60" r="52" />
+            <circle class="hero-ring-fill" id="heroRingFill" cx="60" cy="60" r="52" />
+          </svg>
+          <span class="hero-percent" id="heroPercent">0%</span>
+        </div>
+        <div class="hero-info">
+          <h2 class="hero-heading" id="heroHeading">Let's get started! 🎯</h2>
+          <p class="hero-subtext" id="heroSubtext">0 of 0 items checked off</p>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <span class="hero-stat-value" id="statDone">0</span>
+              <span class="hero-stat-label">Done</span>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-value" id="statTotal">0</span>
+              <span class="hero-stat-label">Total</span>
+            </div>
+            <div class="hero-stat hero-stat--essential">
+              <span class="hero-stat-value" id="statEssentials">0</span>
+              <span class="hero-stat-label">Essentials Left</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Filter Bar ────────────────────────────────────────── -->
+    <div class="filter-bar">
+      <div class="filter-bar-content">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search items...">
+        </div>
+        <div class="filter-pills" id="filterPills">
+          <button class="pill active" data-filter="all">All</button>
+          <button class="pill" data-filter="essential">🔴 Essential</button>
+          <button class="pill" data-filter="recommended">🟡 Recommended</button>
+          <button class="pill" data-filter="nice-to-have">🟣 Nice to Have</button>
+          <button class="pill" data-filter="pending">⏳ Pending</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Category Grid ─────────────────────────────────────── -->
+    <main class="main-content">
+      <div class="category-grid" id="categoryGrid"></div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <span class="empty-icon">🔍</span>
+        <h3>No matching categories</h3>
+        <p>Try adjusting your filters or search query.</p>
+      </div>
+    </main>
+
+    <!-- ── Drawer Overlay ────────────────────────────────────── -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+
+    <!-- ── Drill-Down Drawer ─────────────────────────────────── -->
+    <aside class="drawer" id="drawer">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <span class="drawer-icon" id="drawerIcon"></span>
+          <h2 class="drawer-name" id="drawerName"></h2>
+        </div>
+        <button class="drawer-close" id="drawerClose" aria-label="Close drawer">✕</button>
+      </div>
+      <div class="drawer-progress">
+        <div class="drawer-progress-track">
+          <div class="drawer-progress-fill" id="drawerProgressFill"></div>
+        </div>
+        <span class="drawer-progress-text" id="drawerProgressText">0 / 0</span>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </aside>
+
+    <!-- ── Footer ────────────────────────────────────────────── -->
+    <footer class="app-footer">
+      <p>Baby Checklist v2.0 — Data stored locally. Google Sheets sync coming soon.</p>
+    </footer>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+id,section,category,name,description,priority,quantity,checked
+ne-001,newborn-essentials,Feeding,Baby Bottles (various sizes),Start with 4oz for newborns then move to 8oz later,essential,6,FALSE
+ne-002,newborn-essentials,Feeding,Bottle Brush Set,For cleaning bottles and nipples,essential,1,FALSE
+ne-003,newborn-essentials,Feeding,Formula (if not breastfeeding),Consult pediatrician for brand recommendations,essential,1,FALSE
+ne-004,newborn-essentials,Feeding,Breast Pump,Electric or manual depending on needs,recommended,1,FALSE
+ne-005,newborn-essentials,Feeding,Nursing Pillow,Supports comfortable feeding position,recommended,1,FALSE
+ne-006,newborn-essentials,Feeding,Burp Cloths,Keep several on hand for spit-up,essential,10,FALSE
+ne-007,newborn-essentials,Feeding,Bibs,Soft bibs for feeding time,recommended,8,FALSE
+ne-008,newborn-essentials,Feeding,Bottle Drying Rack,Dedicated space for drying bottles and parts,nice-to-have,1,FALSE
+ne-009,newborn-essentials,Feeding,Milk Storage Bags,For storing pumped breast milk,recommended,1,FALSE
+ne-010,newborn-essentials,Feeding,High Chair (for later),Needed around 6 months when starting solids,nice-to-have,1,FALSE
+ne-011,newborn-essentials,Diapering,Newborn Diapers (Size N & 1),Stock up — expect 10-12 changes per day,essential,2,FALSE
+ne-012,newborn-essentials,Diapering,Baby Wipes (fragrance-free),Sensitive skin wipes are best for newborns,essential,4,FALSE
+ne-013,newborn-essentials,Diapering,Diaper Cream / Rash Ointment,Zinc oxide based for diaper rash prevention,essential,2,FALSE
+ne-014,newborn-essentials,Diapering,Changing Pad,Waterproof pad for changing station,essential,1,FALSE
+ne-015,newborn-essentials,Diapering,Changing Pad Covers,Washable covers — have extras for laundry days,recommended,3,FALSE
+ne-016,newborn-essentials,Diapering,Diaper Pail,Contains odors from dirty diapers,recommended,1,FALSE
+ne-017,newborn-essentials,Diapering,Diaper Bag,Organized bag for on-the-go changes,essential,1,FALSE
+ne-018,newborn-essentials,Clothing,Onesies / Bodysuits (Newborn & 0-3M),Short and long sleeve mix,essential,10,FALSE
+ne-019,newborn-essentials,Clothing,Sleepers / Footie Pajamas,Zip-up styles are easiest for night changes,essential,6,FALSE
+ne-020,newborn-essentials,Clothing,Baby Socks,Soft socks to keep tiny feet warm,essential,8,FALSE
+ne-021,newborn-essentials,Clothing,Baby Hats / Beanies,Newborns lose heat through their heads,essential,3,FALSE
+ne-022,newborn-essentials,Clothing,Mittens (scratch prevention),Prevents baby from scratching their face,recommended,3,FALSE
+ne-023,newborn-essentials,Clothing,Swaddle Blankets,Muslin or stretchy wraps for swaddling,essential,4,FALSE
+ne-024,newborn-essentials,Clothing,Sleep Sacks / Wearable Blankets,Safer alternative to loose blankets,recommended,2,FALSE
+ne-025,newborn-essentials,Sleep,Crib or Bassinet,Firm flat mattress meeting safety standards,essential,1,FALSE
+ne-026,newborn-essentials,Sleep,Crib Mattress,Firm mattress that fits snugly with no gaps,essential,1,FALSE
+ne-027,newborn-essentials,Sleep,Fitted Crib Sheets,Soft cotton or bamboo sheets,essential,3,FALSE
+ne-028,newborn-essentials,Sleep,Waterproof Mattress Protector,Protects mattress from leaks,essential,2,FALSE
+ne-029,newborn-essentials,Sleep,Baby Monitor,Audio or video monitor for peace of mind,recommended,1,FALSE
+ne-030,newborn-essentials,Sleep,White Noise Machine,Helps baby sleep with consistent ambient sound,recommended,1,FALSE
+ne-031,newborn-essentials,Sleep,Nightlight,Soft light for nighttime feedings and changes,nice-to-have,1,FALSE
+ne-032,newborn-essentials,Sleep,Blackout Curtains,Keeps nursery dark for naps and bedtime,recommended,1,FALSE
+ne-033,newborn-essentials,Bathing & Grooming,Baby Bathtub,Infant tub with newborn sling insert,essential,1,FALSE
+ne-034,newborn-essentials,Bathing & Grooming,Baby Wash & Shampoo,Tear-free gentle formula,essential,1,FALSE
+ne-035,newborn-essentials,Bathing & Grooming,Baby Lotion,Fragrance-free for sensitive skin,recommended,1,FALSE
+ne-036,newborn-essentials,Bathing & Grooming,Soft Washcloths,Gentle cloths for bath time,essential,6,FALSE
+ne-037,newborn-essentials,Bathing & Grooming,Hooded Baby Towels,Keeps baby warm after bath,essential,3,FALSE
+ne-038,newborn-essentials,Bathing & Grooming,Baby Nail Clippers / File,Tiny nails grow fast — keep them trimmed,essential,1,FALSE
+ne-039,newborn-essentials,Bathing & Grooming,Baby Brush / Comb,Soft bristle brush for cradle cap,nice-to-have,1,FALSE
+ne-040,newborn-essentials,Health & Safety,Digital Thermometer,Rectal thermometer recommended for infants,essential,1,FALSE
+ne-041,newborn-essentials,Health & Safety,Infant Saline Drops & Nasal Aspirator,For clearing stuffy noses,essential,1,FALSE
+ne-042,newborn-essentials,Health & Safety,Baby Medicine Dispenser,Syringe style for accurate dosing,recommended,1,FALSE
+ne-043,newborn-essentials,Health & Safety,Infant Gas Drops,Simethicone drops for gas relief,recommended,1,FALSE
+ne-044,newborn-essentials,Health & Safety,Pacifiers,Orthodontic one-piece design for safety,recommended,4,FALSE
+ne-045,newborn-essentials,Health & Safety,Outlet Covers & Baby Proofing Kit,Start baby-proofing early,nice-to-have,1,FALSE
+ne-046,newborn-essentials,Travel & Gear,Infant Car Seat,Rear-facing meets latest safety standards,essential,1,FALSE
+ne-047,newborn-essentials,Travel & Gear,Stroller,Compatible with car seat or full travel system,essential,1,FALSE
+ne-048,newborn-essentials,Travel & Gear,Baby Carrier / Wrap,Hands-free carrying for bonding and convenience,recommended,1,FALSE
+ne-049,newborn-essentials,Travel & Gear,Portable Changing Pad,Folds up for diaper changes on the go,recommended,1,FALSE
+ne-050,newborn-essentials,Travel & Gear,Car Window Sun Shades,Protects baby from sun during car rides,nice-to-have,2,FALSE
+ne-051,newborn-essentials,Travel & Gear,Baby Swing / Bouncer,Soothing motion to calm fussy babies,recommended,1,FALSE
+ne-052,newborn-essentials,Travel & Gear,Play Mat / Activity Gym,Tummy time and sensory stimulation,recommended,1,FALSE
+ne-053,newborn-essentials,Nursery,Dresser / Storage for Baby Clothes,Anchored to wall for safety,recommended,1,FALSE
+ne-054,newborn-essentials,Nursery,Diaper Caddy / Organizer,Portable organizer for diapering supplies,recommended,1,FALSE
+ne-055,newborn-essentials,Nursery,Laundry Basket for Baby Clothes,Separate hamper for baby laundry,nice-to-have,1,FALSE
+ne-056,newborn-essentials,Nursery,Baby-Safe Laundry Detergent,Free & clear formula for sensitive skin,essential,1,FALSE
+hb-001,hospital-bag,For Mom,Photo ID & Insurance Card,Required for hospital admission,essential,1,FALSE
+hb-002,hospital-bag,For Mom,Birth Plan (copies),Have several printed copies to share with staff,recommended,1,FALSE
+hb-003,hospital-bag,For Mom,Comfortable Robe,Easy to open for nursing and skin-to-skin,essential,1,FALSE
+hb-004,hospital-bag,For Mom,Nursing-Friendly Pajamas / Gown,Comfortable for recovery and breastfeeding,essential,2,FALSE
+hb-005,hospital-bag,For Mom,Non-Slip Socks / Slippers,Warm and safe for walking hospital halls,essential,2,FALSE
+hb-006,hospital-bag,For Mom,Nursing Bra,Comfortable support for breastfeeding,essential,2,FALSE
+hb-007,hospital-bag,For Mom,Underwear (comfortable / disposable),High-waist postpartum underwear recommended,essential,5,FALSE
+hb-008,hospital-bag,For Mom,Toiletries Bag,Toothbrush toothpaste deodorant lip balm hair ties,essential,1,FALSE
+hb-009,hospital-bag,For Mom,Going Home Outfit,Comfortable loose-fitting clothes,essential,1,FALSE
+hb-010,hospital-bag,For Mom,Phone Charger (long cord),Extra-long cable for reaching the bed,essential,1,FALSE
+hb-011,hospital-bag,For Mom,Snacks & Water Bottle,High-energy snacks for labor and recovery,recommended,1,FALSE
+hb-012,hospital-bag,For Mom,Pillow from Home,Familiar comfort during hospital stay,nice-to-have,1,FALSE
+hb-013,hospital-bag,For Mom,Entertainment (book tablet headphones),For downtime during early labor or recovery,nice-to-have,1,FALSE
+hb-014,hospital-bag,For Mom,Nipple Cream / Lanolin,For sore nipples from early breastfeeding,recommended,1,FALSE
+hb-015,hospital-bag,For Mom,Breast Pads,Disposable or reusable for leaks,recommended,1,FALSE
+hb-016,hospital-bag,For Mom,Peri Bottle,For postpartum hygiene (hospital may provide),recommended,1,FALSE
+hb-017,hospital-bag,For Mom,Stool Softener,For postpartum comfort (check with doctor),recommended,1,FALSE
+hb-018,hospital-bag,For Baby,Going Home Outfit,Seasonally appropriate outfit for the ride home,essential,1,FALSE
+hb-019,hospital-bag,For Baby,Newborn Hat,Keep baby warm especially in cooler months,essential,1,FALSE
+hb-020,hospital-bag,For Baby,Swaddle Blanket,For wrapping baby snug on the way home,essential,2,FALSE
+hb-021,hospital-bag,For Baby,Infant Car Seat (installed),Must be properly installed before hospital discharge,essential,1,FALSE
+hb-022,hospital-bag,For Baby,Newborn Diapers (small pack),Hospital provides some but have extras ready,recommended,1,FALSE
+hb-023,hospital-bag,For Baby,Baby Wipes,Small pack for the hospital stay,recommended,1,FALSE
+hb-024,hospital-bag,For Baby,Pacifier,If you plan to use one from the start,nice-to-have,1,FALSE
+hb-025,hospital-bag,For Baby,Socks / Booties,Tiny socks to keep feet warm,recommended,2,FALSE
+hb-026,hospital-bag,For Partner,Change of Clothes (2 sets),Comfortable clothes for a multi-day stay,essential,2,FALSE
+hb-027,hospital-bag,For Partner,Toiletries Bag,Personal hygiene essentials,essential,1,FALSE
+hb-028,hospital-bag,For Partner,Snacks,Cafeteria may not always be open,recommended,1,FALSE
+hb-029,hospital-bag,For Partner,Phone Charger,Keep charged for photos and updates,essential,1,FALSE
+hb-030,hospital-bag,For Partner,Camera,For capturing first moments (phone works too),nice-to-have,1,FALSE
+hb-031,hospital-bag,For Partner,Pillow & Blanket,Hospital partner sleeping can be uncomfortable,nice-to-have,1,FALSE
+hb-032,hospital-bag,For Partner,Cash / Cards,For vending machines parking cafeteria,essential,1,FALSE
+hb-033,hospital-bag,Documents & Essentials,Pre-Registration Paperwork,Complete hospital pre-registration ahead of time,essential,1,FALSE
+hb-034,hospital-bag,Documents & Essentials,Pediatrician Contact Info,Hospital will need your chosen pediatrician,essential,1,FALSE
+hb-035,hospital-bag,Documents & Essentials,List of Emergency Contacts,Phone numbers for family and support people,essential,1,FALSE
+hb-036,hospital-bag,Documents & Essentials,Cord Blood Banking Kit (if applicable),If you have arranged cord blood banking,nice-to-have,1,FALSE

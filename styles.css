@@ -1,0 +1,1124 @@
+/* ============================================================
+   STYLES — Baby Checklist v2.0 (Category Dashboard)
+   ============================================================
+   Structure:
+    1.  Design Tokens
+    2.  Reset & Base
+    3.  Sticky Header & Section Tabs
+    4.  Hero Section
+    5.  Filter Bar & Pills
+    6.  Category Card Grid
+    7.  Drill-Down Drawer & Overlay
+    8.  Drawer Items (Checklist rows)
+    9.  Empty State & Footer
+   10.  Animations & Keyframes
+   11.  RESPONSIVE — Tablet (≤ 768px)
+   12.  RESPONSIVE — Mobile (≤ 520px)
+   13.  Reduced Motion / Accessibility
+
+   *** When making UI changes, update the base styles first,
+       then check sections 11 and 12 for responsive overrides. ***
+   ============================================================ */
+
+
+/* ==========================================================
+   1. DESIGN TOKENS
+   ========================================================== */
+
+:root {
+  --color-bg: #f5f3f0;
+  --color-surface: #ffffff;
+  --color-surface-hover: #faf9f7;
+  --color-primary: #6c63ff;
+  --color-primary-light: #e8e6ff;
+  --color-accent: #ff6b9d;
+  --color-text: #2d2d3a;
+  --color-text-secondary: #6b6b80;
+  --color-text-muted: #a0a0b4;
+  --color-border: #e8e6e3;
+  --color-success: #34d399;
+  --color-success-bg: #ecfdf5;
+  --color-essential: #ef4444;
+  --color-essential-bg: #fef2f2;
+  --color-recommended: #f59e0b;
+  --color-recommended-bg: #fffbeb;
+  --color-nice: #6c63ff;
+  --color-nice-bg: #e8e6ff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-xl: 0 12px 32px rgba(0,0,0,0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --transition: 0.2s ease;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+
+/* ==========================================================
+   2. RESET & BASE
+   ========================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+
+/* ==========================================================
+   3. STICKY HEADER & SECTION TABS
+   ========================================================== */
+
+.app-header {
+  background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 50%, #ff6b9d 100%);
+  color: white;
+  padding-top: var(--safe-top);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+
+.header-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.logo h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  font-weight: 300;
+}
+
+/* Segmented Tab Control */
+.section-tabs {
+  display: flex;
+  background: rgba(255,255,255,0.18);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 8px 18px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: white;
+  background: rgba(255,255,255,0.1);
+}
+
+.tab.active {
+  background: white;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+
+/* ==========================================================
+   4. HERO SECTION
+   ========================================================== */
+
+.hero {
+  background: linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-bg) 100%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+/* Progress Ring */
+.hero-ring {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hero-ring-svg {
+  transform: rotate(-90deg);
+  display: block;
+}
+
+.hero-ring-bg {
+  fill: none;
+  stroke: rgba(108, 99, 255, 0.15);
+  stroke-width: 8;
+}
+
+.hero-ring-fill {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 326.73;
+  stroke-dashoffset: 326.73;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-percent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.03em;
+}
+
+/* Info Column */
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.hero-subtext {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 0;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.hero-stat:first-child {
+  padding-left: 0;
+}
+
+.hero-stat + .hero-stat {
+  border-left: 1px solid var(--color-border);
+}
+
+.hero-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.hero-stat-label {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.hero-stat--essential .hero-stat-value {
+  color: var(--color-essential);
+}
+
+
+/* ==========================================================
+   5. FILTER BAR & PILLS
+   ========================================================== */
+
+.filter-bar {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-bar-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--color-bg);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  color: var(--color-text);
+}
+
+.search-box input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.pill:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.pill.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+
+/* ==========================================================
+   6. CATEGORY CARD GRID
+   ========================================================== */
+
+.main-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* Individual Card */
+.category-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 22px 16px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: cardIn 0.35s ease both;
+}
+
+.category-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-light);
+}
+
+.category-card:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Completed card */
+.category-card.complete {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.card-complete-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background: var(--color-success);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.card-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.card-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.card-progress-text {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.card-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card.complete .card-progress-fill {
+  background: var(--color-success);
+}
+
+.card-percent {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.category-card.complete .card-percent {
+  color: var(--color-success);
+}
+
+.card-essentials-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-essential);
+  background: var(--color-essential-bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 2px;
+}
+
+
+/* ==========================================================
+   7. DRILL-DOWN DRAWER & OVERLAY
+   ========================================================== */
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 440px;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--color-surface);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.drawer-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.drawer-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.drawer-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.drawer-close:hover {
+  background: var(--color-essential-bg);
+  color: var(--color-essential);
+  border-color: var(--color-essential);
+}
+
+/* Drawer progress bar */
+.drawer-progress {
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.drawer-progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.drawer-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-progress-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ==========================================================
+   8. DRAWER ITEMS (Checklist rows inside Drawer)
+   ========================================================== */
+
+.drawer-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 14px 14px 17px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  cursor: pointer;
+  position: relative;
+  border-left: 3px solid transparent;
+  margin-bottom: 4px;
+}
+
+.drawer-item:hover {
+  background: var(--color-surface-hover);
+}
+
+.drawer-item.checked {
+  opacity: 0.5;
+}
+
+.drawer-item.checked .item-name {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+/* Priority left-border (Option B enhancement) */
+.drawer-item.priority-essential {
+  border-left-color: var(--color-essential);
+}
+
+.drawer-item.priority-recommended {
+  border-left-color: var(--color-recommended);
+}
+
+.drawer-item.priority-nice-to-have {
+  border-left-color: var(--color-nice);
+}
+
+/* Custom Checkbox — 44px touch target wrapping a 22px visual checkbox */
+.checkbox-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -11px;
+  cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  display: none;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-border);
+  border-radius: 6px;
+  transition: all var(--transition);
+  background: white;
+}
+
+.checkbox-wrapper input:checked + .custom-checkbox {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.custom-checkbox svg {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all var(--transition);
+}
+
+.checkbox-wrapper input:checked + .custom-checkbox svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Item Content */
+.item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  transition: all var(--transition);
+}
+
+.item-qty {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  padding: 1px 7px;
+  border-radius: 6px;
+}
+
+.item-description {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* Priority Badges */
+.priority-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.priority-badge.essential {
+  background: var(--color-essential-bg);
+  color: var(--color-essential);
+}
+
+.priority-badge.recommended {
+  background: var(--color-recommended-bg);
+  color: var(--color-recommended);
+}
+
+.priority-badge.nice-to-have {
+  background: var(--color-nice-bg);
+  color: var(--color-nice);
+}
+
+
+/* ==========================================================
+   9. EMPTY STATE & FOOTER
+   ========================================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--color-text-muted);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 0.88rem;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 24px;
+  padding-bottom: calc(24px + var(--safe-bottom));
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+
+/* ==========================================================
+  10. ANIMATIONS & KEYFRAMES
+   ========================================================== */
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Stagger card entrance — JS applies animation-delay inline */
+
+
+/* ==========================================================
+  11. RESPONSIVE — Tablet (≤ 768px)
+   ==========================================================
+   Header stacks, hero gets tighter, grid stays auto-fill.
+   ========================================================== */
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 20px;
+  }
+
+  .section-tabs {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+  }
+
+  .hero-content {
+    gap: 24px;
+    padding: 24px 20px;
+  }
+
+  .hero-ring-svg {
+    width: 100px;
+    height: 100px;
+  }
+
+  .hero-percent {
+    font-size: 1.5rem;
+  }
+
+  .hero-heading {
+    font-size: 1.2rem;
+  }
+
+  .filter-bar-content {
+    padding: 12px 20px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    min-width: 100%;
+  }
+
+  .filter-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .filter-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .main-content {
+    padding: 16px 20px;
+  }
+
+  .category-grid {
+    gap: 12px;
+  }
+}
+
+
+/* ==========================================================
+  12. RESPONSIVE — Mobile (≤ 520px)
+   ==========================================================
+   Full mobile: stacked hero, 2-col grid, bottom-sheet drawer,
+   larger touch targets, iOS zoom prevention.
+   ========================================================== */
+
+@media (max-width: 520px) {
+  /* -- Header -- */
+  .header-content {
+    padding: 10px 16px;
+    padding-top: calc(10px + var(--safe-top));
+  }
+
+  .logo-icon {
+    font-size: 1.5rem;
+  }
+
+  .logo h1 {
+    font-size: 1.05rem;
+  }
+
+  .tagline {
+    font-size: 0.7rem;
+  }
+
+  .tab {
+    padding: 7px 10px;
+    font-size: 0.72rem;
+  }
+
+  /* -- Hero: stacked vertical -- */
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .hero-ring-svg {
+    width: 100px;
+    height: 100px;
+  }
+
+  .hero-percent {
+    font-size: 1.5rem;
+  }
+
+  .hero-heading {
+    font-size: 1.15rem;
+  }
+
+  .hero-subtext {
+    font-size: 0.82rem;
+  }
+
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .hero-stat {
+    padding: 0 16px;
+  }
+
+  .hero-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .hero-stat-label {
+    font-size: 0.62rem;
+  }
+
+  /* -- Filter Bar -- */
+  .filter-bar-content {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .search-box input {
+    padding: 12px 14px 12px 40px;
+    font-size: 16px; /* prevents iOS auto-zoom */
+  }
+
+  .pill {
+    padding: 8px 12px;
+    font-size: 0.72rem;
+  }
+
+  /* -- Category Grid: 2 columns -- */
+  .main-content {
+    padding: 12px;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .category-card {
+    padding: 16px 10px 14px;
+  }
+
+  .card-icon {
+    font-size: 1.6rem;
+  }
+
+  .card-name {
+    font-size: 0.8rem;
+  }
+
+  .card-progress-text {
+    font-size: 0.68rem;
+  }
+
+  .card-percent {
+    font-size: 0.8rem;
+  }
+
+  .card-essentials-badge {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+  }
+
+  .card-complete-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.62rem;
+    top: 8px;
+    right: 8px;
+  }
+
+  /* -- Drawer: bottom sheet mode -- */
+  .drawer {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transform: translateY(100%);
+  }
+
+  .drawer.open {
+    transform: translateY(0);
+  }
+
+  .drawer-header {
+    padding: 16px 16px 12px;
+  }
+
+  .drawer-icon {
+    font-size: 1.3rem;
+  }
+
+  .drawer-name {
+    font-size: 1rem;
+  }
+
+  .drawer-progress {
+    padding: 10px 16px;
+  }
+
+  .drawer-body {
+    padding: 4px 12px 24px;
+    padding-bottom: calc(24px + var(--safe-bottom));
+  }
+
+  .drawer-item {
+    padding: 12px 10px 12px 13px;
+    gap: 10px;
+  }
+
+  /* -- Footer -- */
+  .app-footer {
+    padding: 20px 16px;
+    padding-bottom: calc(20px + var(--safe-bottom));
+    font-size: 0.72rem;
+  }
+
+  /* -- Empty State -- */
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .empty-icon {
+    font-size: 2.5rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1rem;
+  }
+
+  .empty-state p {
+    font-size: 0.82rem;
+  }
+}
+
+
+/* ==========================================================
+  13. REDUCED MOTION / ACCESSIBILITY
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

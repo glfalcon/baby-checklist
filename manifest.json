@@ -1,0 +1,17 @@
+{
+  "name": "Baby Checklist",
+  "short_name": "Baby Checklist",
+  "description": "First-time parent essentials checklist — track everything you need for baby and hospital bag.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f3f0",
+  "theme_color": "#6c63ff",
+  "icons": [
+    {
+      "src": "concept_c_transparent.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
