@@ -1330,7 +1330,87 @@ body {
 
 
 /* ==========================================================
-  13. REDUCED MOTION / ACCESSIBILITY
+  13. DARK THEME
+   ========================================================== */
+
+[data-theme="dark"] {
+  --color-bg: #12121f;
+  --color-surface: #1e1e32;
+  --color-surface-hover: #282845;
+  --color-primary: #8b83ff;
+  --color-primary-light: #2a2850;
+  --color-text: #e8e6f0;
+  --color-text-secondary: #a0a0b8;
+  --color-text-muted: #6b6b82;
+  --color-border: #2e2e48;
+  --color-success-bg: #0d2818;
+  --color-essential-bg: #2d1215;
+  --color-recommended-bg: #2d2012;
+  --color-nice-bg: #1e1c38;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-xl: 0 12px 32px rgba(0,0,0,0.6);
+}
+
+[data-theme="dark"] .custom-checkbox {
+  background: var(--color-surface);
+}
+
+[data-theme="dark"] .hero {
+  background: linear-gradient(180deg, #1a1840 0%, var(--color-bg) 100%);
+}
+
+[data-theme="dark"] .hero-ring-bg {
+  stroke: rgba(139, 131, 255, 0.2);
+}
+
+[data-theme="dark"] .sync-bar {
+  background: #0d2818;
+  border-bottom-color: rgba(52, 211, 153, 0.15);
+}
+
+[data-theme="dark"] .auth-overlay {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.1);
+}
+
+/* Smooth theme transition */
+body,
+.app-header,
+.hero,
+.filter-bar,
+.category-card,
+.drawer,
+.sync-bar,
+.offline-banner,
+.auth-card {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+/* ==========================================================
+  14. REDUCED MOTION / ACCESSIBILITY
    ========================================================== */
 
 @media (prefers-reduced-motion: reduce) {

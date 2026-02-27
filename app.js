@@ -51,6 +51,7 @@ var gisInited = false;
 var tokenClient = null;
 var currentUser = null;
 var sheetRowMap = {};
+var celebratedCategories = {};
 
 var state = {
   activeSection: "newborn-essentials",
@@ -398,6 +399,9 @@ function toggleItem(id, checked) {
   Storage.setChecked(id, checked);
   render();
   saveToSheet(id, checked);
+  if (checked) {
+    checkForCompletions(id);
+  }
 }
 
 // ── Render: Category Card Grid ────────────────────────────────
@@ -700,6 +704,153 @@ function onKeyDown(e) {
   }
 }
 
+// ── Dark Mode ─────────────────────────────────────────────────
+
+function initTheme() {
+  var saved = localStorage.getItem("baby-checklist-theme");
+  if (saved) {
+    document.documentElement.setAttribute("data-theme", saved);
+  } else if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+  updateThemeIcon();
+}
+
+function toggleTheme() {
+  var current =
+    document.documentElement.getAttribute("data-theme");
+  var next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("baby-checklist-theme", next);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  var icon = document.getElementById("themeIcon");
+  if (!icon) return;
+  var isDark =
+    document.documentElement.getAttribute("data-theme") === "dark";
+  icon.textContent = isDark ? "☀️" : "🌙";
+}
+
+// ── Confetti ──────────────────────────────────────────────────
+
+function checkForCompletions(itemId) {
+  var item = CHECKLIST_DATA.find(function (i) {
+    return i.id === itemId;
+  });
+  if (!item) return;
+
+  var catItems = CHECKLIST_DATA.filter(function (i) {
+    return (
+      i.section === item.section && i.category === item.category
+    );
+  });
+  var allChecked = catItems.every(function (i) {
+    return Storage.isChecked(i.id);
+  });
+
+  var catKey = item.section + "|" + item.category;
+  if (allChecked && !celebratedCategories[catKey]) {
+    celebratedCategories[catKey] = true;
+    setTimeout(launchConfetti, 300);
+  }
+
+  var sectionItems = CHECKLIST_DATA.filter(function (i) {
+    return i.section === item.section;
+  });
+  var sectionComplete = sectionItems.every(function (i) {
+    return Storage.isChecked(i.id);
+  });
+  var sectionKey = "section-" + item.section;
+  if (sectionComplete && !celebratedCategories[sectionKey]) {
+    celebratedCategories[sectionKey] = true;
+    setTimeout(launchConfetti, 500);
+    setTimeout(launchConfetti, 900);
+  }
+}
+
+function launchConfetti() {
+  var canvas = document.createElement("canvas");
+  canvas.style.cssText =
+    "position:fixed;inset:0;z-index:999;pointer-events:none;";
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+
+  var ctx = canvas.getContext("2d");
+  var colors = [
+    "#6c63ff",
+    "#ff6b9d",
+    "#34d399",
+    "#f59e0b",
+    "#ef4444",
+    "#a78bfa",
+    "#06b6d4",
+  ];
+  var particles = [];
+
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x:
+        canvas.width * 0.5 +
+        (Math.random() - 0.5) * canvas.width * 0.5,
+      y: canvas.height * 0.5,
+      vx: (Math.random() - 0.5) * 18,
+      vy: -Math.random() * 20 - 5,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 12,
+      opacity: 1,
+    });
+  }
+
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.45;
+      p.vx *= 0.99;
+      p.rotation += p.rotationSpeed;
+      p.opacity -= 0.007;
+
+      if (p.opacity <= 0) continue;
+      alive = true;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.globalAlpha = Math.max(0, p.opacity);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(
+        -p.size / 2,
+        -p.size / 2,
+        p.size,
+        p.size * 0.6,
+      );
+      ctx.restore();
+    }
+
+    frame++;
+    if (alive && frame < 200) {
+      requestAnimationFrame(animate);
+    } else {
+      canvas.remove();
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
 // ── Init ──────────────────────────────────────────────────────
 
 function initApp() {
@@ -742,6 +893,7 @@ function initApp() {
 // ── Bootstrap ─────────────────────────────────────────────────
 
 window.onload = function () {
+  initTheme();
   if (typeof gapi !== "undefined") {
     gapiLoaded();
   }
