@@ -717,6 +717,15 @@ function initTheme() {
     document.documentElement.setAttribute("data-theme", "dark");
   }
   updateThemeIcon();
+
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
+      if (!localStorage.getItem("baby-checklist-theme")) {
+        document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light");
+        updateThemeIcon();
+      }
+    });
+  }
 }
 
 function toggleTheme() {
