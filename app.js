@@ -629,7 +629,8 @@ function updateCategoryOptions() {
   var select = document.getElementById("addCategory");
   var categories = getCategoriesForSection(section);
 
-  var html = "";
+  var html =
+    '<option value="" disabled selected>Select a category...</option>';
   categories.forEach(function (cat) {
     var icon = CATEGORY_ICONS[cat] || "📦";
     html +=
