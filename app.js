@@ -18,7 +18,6 @@
 var GOOGLE_CONFIG = {
   clientId:
     "531203228430-94fbaf0bc30tkp211gvac6ihbk4cc1do.apps.googleusercontent.com",
-  apiKey: "REMOVED",
   discoveryDocs: [
     "https://sheets.googleapis.com/$discovery/rest?version=v4",
   ],
@@ -98,7 +97,6 @@ function gapiLoaded() {
   gapi.load("client", function () {
     gapi.client
       .init({
-        apiKey: GOOGLE_CONFIG.apiKey,
         discoveryDocs: GOOGLE_CONFIG.discoveryDocs,
       })
       .then(function () {
