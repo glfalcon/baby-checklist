@@ -814,7 +814,216 @@ body {
 
 
 /* ==========================================================
-  10. ANIMATIONS & KEYFRAMES
+  10. AUTH OVERLAY, SYNC BAR & OFFLINE BANNER
+   ========================================================== */
+
+/* Auth Overlay */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.3s ease;
+}
+
+.auth-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  text-align: center;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+}
+
+.auth-logo {
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.auth-card h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-google:hover:not(:disabled) {
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-google:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-offline {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.btn-offline:hover {
+  color: var(--color-text-secondary);
+}
+
+.auth-note {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 20px;
+}
+
+/* Sync Bar */
+.sync-bar {
+  background: var(--color-success-bg);
+  border-bottom: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.sync-bar-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.78rem;
+}
+
+.sync-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sync-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sync-dot.synced {
+  background: var(--color-success);
+}
+
+.sync-dot.syncing {
+  background: var(--color-recommended);
+  animation: pulse 1s infinite;
+}
+
+.sync-dot.error {
+  background: var(--color-essential);
+}
+
+.btn-sync-signout {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-sync-signout:hover {
+  background: var(--color-essential-bg);
+  color: var(--color-essential);
+  border-color: var(--color-essential);
+}
+
+/* Offline Banner */
+.offline-banner {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.offline-banner-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.btn-offline-signin {
+  padding: 4px 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.72rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+
+.btn-offline-signin:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+
+/* ==========================================================
+  11. ANIMATIONS & KEYFRAMES
    ========================================================== */
 
 @keyframes cardIn {
@@ -831,6 +1040,11 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* Stagger card entrance — JS applies animation-delay inline */
