@@ -3,14 +3,14 @@
    ============================================================
    Handles: Google Sign-In, Sheets sync, multi-user,
    section tabs, hero stats, filter pills, category card grid,
-   drill-down drawer, checkbox persistence.
+   drill-down drawer, checkbox persistence, add/delete items.
 
    Storage strategy:
    - localStorage = fast local cache (always available)
    - Google Sheets = source of truth (when signed in)
-   - On sign-in: Sheet data overwrites localStorage (shared across all users)
-   - On checkbox: localStorage updates instantly, Sheet syncs async
-   - Multi-user: one row per item, last action wins, checked_by tracks who
+     • Checklist tab: checked states
+     • CustomItems tab: user-added items
+     • DeletedItems tab: soft-deleted item IDs
    ============================================================ */
 
 // ── Google Config ─────────────────────────────────────────────
@@ -25,6 +25,8 @@ var GOOGLE_CONFIG = {
     "https://www.googleapis.com/auth/spreadsheets email profile",
   spreadsheetId: "1w7HcJwvlM-1meMxRAJdfQ3idzDJwHRRD5r9lI1BNWpw",
   sheetName: "Checklist",
+  customItemsSheet: "CustomItems",
+  deletedItemsSheet: "DeletedItems",
 };
 
 // ── Category Icons ────────────────────────────────────────────
@@ -52,6 +54,8 @@ var tokenClient = null;
 var currentUser = null;
 var sheetRowMap = {};
 var celebratedCategories = {};
+var customItems = [];
+var deletedItemIds = {};
 
 var state = {
   activeSection: "newborn-essentials",
@@ -64,6 +68,14 @@ var state = {
 // ── DOM References (populated in initApp) ─────────────────────
 
 var dom = {};
+
+// ── getAllItems — merges built-in + custom, filters deleted ───
+
+function getAllItems() {
+  return CHECKLIST_DATA.concat(customItems).filter(function (item) {
+    return !deletedItemIds[item.id];
+  });
+}
 
 // ── Storage Adapter (localStorage) ────────────────────────────
 
@@ -156,7 +168,6 @@ function handleAuthCallback(resp) {
         "baby-checklist-user",
         JSON.stringify(currentUser),
       );
-
       state.isOnline = true;
       updateAuthUI();
       syncFromSheet();
@@ -175,8 +186,11 @@ function signOut() {
   currentUser = null;
   state.isOnline = false;
   sheetRowMap = {};
+  customItems = [];
+  deletedItemIds = {};
   localStorage.removeItem("baby-checklist-user");
   updateAuthUI();
+  render();
 }
 
 function continueOffline() {
@@ -208,57 +222,134 @@ function updateAuthUI() {
   }
 }
 
-// ── Sheets Sync ───────────────────────────────────────────────
+// ── Sheet Helpers ─────────────────────────────────────────────
 
-function getRange(cells) {
-  return GOOGLE_CONFIG.sheetName + "!" + cells;
+function getRange(sheet, cells) {
+  return sheet + "!" + cells;
 }
 
-function ensureHeaders() {
+function ensureSheet(sheetName, headers) {
   return gapi.client.sheets.spreadsheets.values
     .get({
       spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-      range: getRange("A1:D1"),
+      range: getRange(sheetName, "A1:Z1"),
     })
     .then(function (resp) {
       if (!resp.result.values || resp.result.values.length === 0) {
         return gapi.client.sheets.spreadsheets.values.update({
           spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-          range: getRange("A1:D1"),
+          range: getRange(sheetName, "A1"),
           valueInputOption: "RAW",
-          resource: {
-            values: [
-              ["item_id", "checked_by", "checked", "updated_at"],
-            ],
-          },
+          resource: { values: [headers] },
         });
       }
+    })
+    .catch(function () {
+      return gapi.client.sheets.spreadsheets
+        .batchUpdate({
+          spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
+          resource: {
+            requests: [
+              { addSheet: { properties: { title: sheetName } } },
+            ],
+          },
+        })
+        .then(function () {
+          return gapi.client.sheets.spreadsheets.values.update({
+            spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
+            range: getRange(sheetName, "A1"),
+            valueInputOption: "RAW",
+            resource: { values: [headers] },
+          });
+        });
     });
 }
+
+// ── Sheets Sync ───────────────────────────────────────────────
 
 function syncFromSheet() {
   if (!currentUser) return;
 
   updateSyncStatus("syncing");
 
-  ensureHeaders()
+  var checklist = GOOGLE_CONFIG.sheetName;
+  var custom = GOOGLE_CONFIG.customItemsSheet;
+  var deleted = GOOGLE_CONFIG.deletedItemsSheet;
+
+  ensureSheet(checklist, [
+    "item_id",
+    "checked_by",
+    "checked",
+    "updated_at",
+  ])
     .then(function () {
-      return gapi.client.sheets.spreadsheets.values.get({
+      return ensureSheet(custom, [
+        "item_id",
+        "section",
+        "category",
+        "name",
+        "description",
+        "priority",
+        "quantity",
+        "added_by",
+        "added_at",
+      ]);
+    })
+    .then(function () {
+      return ensureSheet(deleted, [
+        "item_id",
+        "deleted_by",
+        "deleted_at",
+      ]);
+    })
+    .then(function () {
+      return gapi.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-        range: getRange("A:D"),
+        ranges: [
+          getRange(checklist, "A:D"),
+          getRange(custom, "A:I"),
+          getRange(deleted, "A:C"),
+        ],
       });
     })
     .then(function (resp) {
-      var rows = resp.result.values || [];
+      var ranges = resp.result.valueRanges;
+
+      // Checked states
+      var checkRows = (ranges[0] && ranges[0].values) || [];
       sheetRowMap = {};
-
-      for (var i = 1; i < rows.length; i++) {
-        var itemId = rows[i][0];
-        var checked = rows[i][2];
-        var isChecked = checked === "TRUE";
-
-        Storage.setChecked(itemId, isChecked);
+      for (var i = 1; i < checkRows.length; i++) {
+        var itemId = checkRows[i][0];
+        var checked = checkRows[i][2];
+        Storage.setChecked(itemId, checked === "TRUE");
         sheetRowMap[itemId] = i + 1;
+      }
+
+      // Custom items
+      var customRows = (ranges[1] && ranges[1].values) || [];
+      customItems = [];
+      for (var j = 1; j < customRows.length; j++) {
+        var r = customRows[j];
+        if (r[0]) {
+          customItems.push({
+            id: r[0],
+            section: r[1] || "newborn-essentials",
+            category: r[2] || "Uncategorized",
+            name: r[3] || "Unnamed Item",
+            description: r[4] || "",
+            priority: r[5] || "recommended",
+            quantity: parseInt(r[6]) || 1,
+          });
+        }
+      }
+
+      // Deleted items
+      var deletedRows = (ranges[2] && ranges[2].values) || [];
+      deletedItemIds = {};
+      for (var k = 1; k < deletedRows.length; k++) {
+        if (deletedRows[k][0]) {
+          deletedItemIds[deletedRows[k][0]] = true;
+        }
       }
 
       render();
@@ -283,12 +374,13 @@ function saveToSheet(itemId, checked) {
   ];
 
   var promise;
+  var sheet = GOOGLE_CONFIG.sheetName;
 
   if (sheetRowMap[itemId]) {
     var row = sheetRowMap[itemId];
     promise = gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-      range: getRange("A" + row + ":D" + row),
+      range: getRange(sheet, "A" + row + ":D" + row),
       valueInputOption: "RAW",
       resource: { values: [rowData] },
     });
@@ -296,7 +388,7 @@ function saveToSheet(itemId, checked) {
     promise = gapi.client.sheets.spreadsheets.values
       .append({
         spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-        range: getRange("A:D"),
+        range: getRange(sheet, "A:D"),
         valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
         resource: { values: [rowData] },
@@ -317,6 +409,68 @@ function saveToSheet(itemId, checked) {
     })
     .catch(function (err) {
       console.error("Save to sheet failed:", err);
+      updateSyncStatus("error");
+    });
+}
+
+function saveCustomItemToSheet(item) {
+  if (!currentUser || !state.isOnline) return;
+
+  updateSyncStatus("syncing");
+
+  var rowData = [
+    item.id,
+    item.section,
+    item.category,
+    item.name,
+    item.description,
+    item.priority,
+    item.quantity.toString(),
+    currentUser.email,
+    new Date().toISOString(),
+  ];
+
+  gapi.client.sheets.spreadsheets.values
+    .append({
+      spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
+      range: getRange(GOOGLE_CONFIG.customItemsSheet, "A:I"),
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      resource: { values: [rowData] },
+    })
+    .then(function () {
+      updateSyncStatus("synced");
+    })
+    .catch(function (err) {
+      console.error("Save custom item failed:", err);
+      updateSyncStatus("error");
+    });
+}
+
+function saveDeletedItemToSheet(itemId) {
+  if (!currentUser || !state.isOnline) return;
+
+  updateSyncStatus("syncing");
+
+  var rowData = [
+    itemId,
+    currentUser.email,
+    new Date().toISOString(),
+  ];
+
+  gapi.client.sheets.spreadsheets.values
+    .append({
+      spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
+      range: getRange(GOOGLE_CONFIG.deletedItemsSheet, "A:C"),
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      resource: { values: [rowData] },
+    })
+    .then(function () {
+      updateSyncStatus("synced");
+    })
+    .catch(function (err) {
+      console.error("Save deleted item failed:", err);
       updateSyncStatus("error");
     });
 }
@@ -357,7 +511,7 @@ function getMotivationalHeading(pct) {
 function getCategoriesForSection(section) {
   var seen = {};
   var result = [];
-  CHECKLIST_DATA.forEach(function (item) {
+  getAllItems().forEach(function (item) {
     if (item.section === section && !seen[item.category]) {
       seen[item.category] = true;
       result.push(item.category);
@@ -367,7 +521,7 @@ function getCategoriesForSection(section) {
 }
 
 function getFilteredItems() {
-  return CHECKLIST_DATA.filter(function (item) {
+  return getAllItems().filter(function (item) {
     if (item.section !== state.activeSection) return false;
 
     if (state.activeFilter !== "all") {
@@ -393,6 +547,15 @@ function getFilteredItems() {
   });
 }
 
+function generateItemId() {
+  return (
+    "custom-" +
+    Date.now() +
+    "-" +
+    Math.random().toString(36).substr(2, 5)
+  );
+}
+
 // ── Toggle Item (unified handler) ─────────────────────────────
 
 function toggleItem(id, checked) {
@@ -402,6 +565,160 @@ function toggleItem(id, checked) {
   if (checked) {
     checkForCompletions(id);
   }
+}
+
+// ── Delete Item ───────────────────────────────────────────────
+
+function removeItem(id) {
+  if (!confirm("Remove this item from the checklist?")) return;
+
+  deletedItemIds[id] = true;
+  saveDeletedItemToSheet(id);
+
+  render();
+
+  // Close drawer if category is now empty
+  if (state.drawerCategory) {
+    var remaining = getAllItems().filter(function (i) {
+      return (
+        i.section === state.activeSection &&
+        i.category === state.drawerCategory
+      );
+    });
+    if (remaining.length === 0) {
+      closeDrawer();
+    } else {
+      renderDrawer();
+    }
+  }
+}
+
+// ── Add Item Modal ────────────────────────────────────────────
+
+function openAddModal() {
+  var modal = document.getElementById("addItemModal");
+  modal.style.display = "";
+  document.getElementById("addSection").value =
+    state.activeSection;
+  updateCategoryOptions();
+  document.getElementById("addName").value = "";
+  document.getElementById("addDescription").value = "";
+  document.getElementById("addQuantity").value = "1";
+  document.getElementById("newCategoryGroup").style.display =
+    "none";
+  document.getElementById("addNewCategory").value = "";
+
+  var btns = document.querySelectorAll(".priority-btn");
+  btns.forEach(function (b) {
+    b.classList.toggle(
+      "active",
+      b.dataset.priority === "essential",
+    );
+  });
+
+  document.body.style.overflow = "hidden";
+}
+
+function closeAddModal() {
+  document.getElementById("addItemModal").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function updateCategoryOptions() {
+  var section = document.getElementById("addSection").value;
+  var select = document.getElementById("addCategory");
+  var categories = getCategoriesForSection(section);
+
+  var html = "";
+  categories.forEach(function (cat) {
+    var icon = CATEGORY_ICONS[cat] || "📦";
+    html +=
+      '<option value="' +
+      cat +
+      '">' +
+      icon +
+      " " +
+      cat +
+      "</option>";
+  });
+  html += '<option value="__new__">➕ New Category...</option>';
+
+  select.innerHTML = html;
+  handleCategoryChange();
+}
+
+function handleCategoryChange() {
+  var val = document.getElementById("addCategory").value;
+  var newGroup = document.getElementById("newCategoryGroup");
+  newGroup.style.display = val === "__new__" ? "" : "none";
+}
+
+function handleAddItem(e) {
+  e.preventDefault();
+
+  var section = document.getElementById("addSection").value;
+  var categoryVal = document.getElementById("addCategory").value;
+  var category =
+    categoryVal === "__new__"
+      ? document.getElementById("addNewCategory").value.trim()
+      : categoryVal;
+
+  if (!category) {
+    alert("Please enter a category name.");
+    return;
+  }
+
+  var name = document.getElementById("addName").value.trim();
+  if (!name) return;
+
+  var description = document
+    .getElementById("addDescription")
+    .value.trim();
+  var quantity =
+    parseInt(document.getElementById("addQuantity").value) || 1;
+
+  var activeBtn = document.querySelector(".priority-btn.active");
+  var priority = activeBtn
+    ? activeBtn.dataset.priority
+    : "recommended";
+
+  var newItem = {
+    id: generateItemId(),
+    section: section,
+    category: category,
+    name: name,
+    description: description,
+    priority: priority,
+    quantity: quantity,
+  };
+
+  customItems.push(newItem);
+  saveCustomItemToSheet(newItem);
+
+  closeAddModal();
+  render();
+
+  // Open the drawer to the newly added category if on the right section
+  if (section === state.activeSection) {
+    openDrawer(category);
+  }
+}
+
+// ── Priority Selector ─────────────────────────────────────────
+
+function initPrioritySelector() {
+  var container = document.getElementById("prioritySelector");
+  if (!container) return;
+
+  container.addEventListener("click", function (e) {
+    var btn = e.target.closest(".priority-btn");
+    if (!btn) return;
+
+    container.querySelectorAll(".priority-btn").forEach(function (b) {
+      b.classList.remove("active");
+    });
+    btn.classList.add("active");
+  });
 }
 
 // ── Render: Category Card Grid ────────────────────────────────
@@ -421,7 +738,7 @@ function renderGrid() {
     if (!filteredCats[cat]) return;
     visibleCount++;
 
-    var catItems = CHECKLIST_DATA.filter(function (i) {
+    var catItems = getAllItems().filter(function (i) {
       return (
         i.section === state.activeSection && i.category === cat
       );
@@ -479,7 +796,7 @@ function renderGrid() {
 // ── Render: Hero Section ──────────────────────────────────────
 
 function renderHero() {
-  var sectionItems = CHECKLIST_DATA.filter(function (i) {
+  var sectionItems = getAllItems().filter(function (i) {
     return i.section === state.activeSection;
   });
   var total = sectionItems.length;
@@ -510,7 +827,7 @@ function renderDrawer() {
   if (!state.drawerCategory) return;
 
   var cat = state.drawerCategory;
-  var items = CHECKLIST_DATA.filter(function (i) {
+  var items = getAllItems().filter(function (i) {
     return i.section === state.activeSection && i.category === cat;
   });
   var checkedCount = items.filter(function (i) {
@@ -585,6 +902,11 @@ function buildDrawerItemHTML(item, checked) {
     item.description +
     "</div>" +
     "</div>" +
+    '<button class="item-delete" data-delete-id="' +
+    item.id +
+    '" onclick="event.stopPropagation(); removeItem(\'' +
+    item.id +
+    '\')" aria-label="Delete">✕</button>' +
     "</div>"
   );
 }
@@ -642,6 +964,7 @@ function onDrawerItemClick(e) {
   var item = e.target.closest(".drawer-item");
   if (!item) return;
   if (e.target.closest(".checkbox-wrapper")) return;
+  if (e.target.closest(".item-delete")) return;
 
   var id = item.dataset.id;
   var isChecked = Storage.isChecked(id);
@@ -699,8 +1022,14 @@ function onSearchInput() {
 }
 
 function onKeyDown(e) {
-  if (e.key === "Escape" && state.drawerCategory) {
-    closeDrawer();
+  if (e.key === "Escape") {
+    if (
+      document.getElementById("addItemModal").style.display !== "none"
+    ) {
+      closeAddModal();
+    } else if (state.drawerCategory) {
+      closeDrawer();
+    }
   }
 }
 
@@ -719,12 +1048,17 @@ function initTheme() {
   updateThemeIcon();
 
   if (window.matchMedia) {
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
-      if (!localStorage.getItem("baby-checklist-theme")) {
-        document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light");
-        updateThemeIcon();
-      }
-    });
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", function (e) {
+        if (!localStorage.getItem("baby-checklist-theme")) {
+          document.documentElement.setAttribute(
+            "data-theme",
+            e.matches ? "dark" : "light",
+          );
+          updateThemeIcon();
+        }
+      });
   }
 }
 
@@ -748,12 +1082,13 @@ function updateThemeIcon() {
 // ── Confetti ──────────────────────────────────────────────────
 
 function checkForCompletions(itemId) {
-  var item = CHECKLIST_DATA.find(function (i) {
+  var allItems = getAllItems();
+  var item = allItems.find(function (i) {
     return i.id === itemId;
   });
   if (!item) return;
 
-  var catItems = CHECKLIST_DATA.filter(function (i) {
+  var catItems = allItems.filter(function (i) {
     return (
       i.section === item.section && i.category === item.category
     );
@@ -768,7 +1103,7 @@ function checkForCompletions(itemId) {
     setTimeout(launchConfetti, 300);
   }
 
-  var sectionItems = CHECKLIST_DATA.filter(function (i) {
+  var sectionItems = allItems.filter(function (i) {
     return i.section === item.section;
   });
   var sectionComplete = sectionItems.every(function (i) {
@@ -896,6 +1231,7 @@ function initApp() {
   dom.drawerOverlay.addEventListener("click", closeDrawer);
   document.addEventListener("keydown", onKeyDown);
 
+  initPrioritySelector();
   render();
 }
 

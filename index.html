@@ -176,6 +176,60 @@
       <p>Baby Checklist v2.0 — Synced with Google Sheets for multi-user access.</p>
     </footer>
 
+    <!-- ── FAB (Add Item) ──────────────────────────────────────── -->
+    <button class="fab" id="fabAdd" onclick="openAddModal()" aria-label="Add new item">
+      <span>＋</span>
+    </button>
+
+    <!-- ── Add Item Modal ──────────────────────────────────────── -->
+    <div class="modal-overlay" id="addItemModal" style="display:none">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>➕ Add New Item</h2>
+          <button class="modal-close" onclick="closeAddModal()">✕</button>
+        </div>
+        <form id="addItemForm" onsubmit="handleAddItem(event)">
+          <div class="form-group">
+            <label for="addSection">Section</label>
+            <select id="addSection" onchange="updateCategoryOptions()" required>
+              <option value="newborn-essentials">👶 Newborn Essentials</option>
+              <option value="hospital-bag">🏥 Hospital Bag</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="addCategory">Category</label>
+            <select id="addCategory" onchange="handleCategoryChange()" required>
+            </select>
+          </div>
+          <div class="form-group" id="newCategoryGroup" style="display:none">
+            <label for="addNewCategory">New Category Name</label>
+            <input type="text" id="addNewCategory" placeholder="e.g., Baby Tech">
+          </div>
+          <div class="form-group">
+            <label for="addName">Item Name <span class="required">*</span></label>
+            <input type="text" id="addName" placeholder="e.g., Baby Thermometer" required>
+          </div>
+          <div class="form-group">
+            <label for="addDescription">Description</label>
+            <input type="text" id="addDescription" placeholder="Brief description or tip">
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <div class="priority-selector" id="prioritySelector">
+              <button type="button" class="priority-btn essential active" data-priority="essential">🔴 Essential</button>
+              <button type="button" class="priority-btn recommended" data-priority="recommended">🟡 Recommended</button>
+              <button type="button" class="priority-btn nice-to-have" data-priority="nice-to-have">🟣 Nice to Have</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="addQuantity">Quantity</label>
+            <input type="number" id="addQuantity" value="1" min="1" max="99">
+          </div>
+          <button type="submit" class="btn-add-item">Add Item</button>
+        </form>
+      </div>
+    </div>
+
   </div>
 
   <script src="data.js"></script>

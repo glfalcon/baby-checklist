@@ -1330,6 +1330,265 @@ body {
 
 
 /* ==========================================================
+  12.5  FAB, ADD MODAL & DELETE BUTTON
+   ========================================================== */
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  bottom: calc(24px + var(--safe-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 100%);
+  color: white;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  z-index: 90;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(108, 99, 255, 0.5);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  max-width: 440px;
+  width: 92%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.modal-close:hover {
+  background: var(--color-essential-bg);
+  color: var(--color-essential);
+}
+
+/* Form */
+#addItemForm {
+  padding: 16px 24px 24px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+}
+
+.form-group .required {
+  color: var(--color-essential);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* Priority Selector */
+.priority-selector {
+  display: flex;
+  gap: 6px;
+}
+
+.priority-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+}
+
+.priority-btn:hover {
+  border-color: var(--color-text-muted);
+}
+
+.priority-btn.essential.active {
+  background: var(--color-essential-bg);
+  border-color: var(--color-essential);
+  color: var(--color-essential);
+}
+
+.priority-btn.recommended.active {
+  background: var(--color-recommended-bg);
+  border-color: var(--color-recommended);
+  color: var(--color-recommended);
+}
+
+.priority-btn.nice-to-have.active {
+  background: var(--color-nice-bg);
+  border-color: var(--color-nice);
+  color: var(--color-nice);
+}
+
+/* Add Item Button */
+.btn-add-item {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 100%);
+  color: white;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: 6px;
+}
+
+.btn-add-item:hover {
+  box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Delete Button (inside drawer items) */
+.item-delete {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  align-self: center;
+}
+
+.item-delete:hover {
+  background: var(--color-essential-bg);
+  color: var(--color-essential);
+}
+
+/* Mobile adjustments for modal */
+@media (max-width: 520px) {
+  .fab {
+    bottom: calc(16px + var(--safe-bottom));
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    font-size: 1.4rem;
+  }
+
+  .modal-card {
+    width: 95%;
+    max-height: 85vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header {
+    padding: 16px 16px 10px;
+  }
+
+  #addItemForm {
+    padding: 12px 16px 20px;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="number"],
+  .form-group select {
+    font-size: 16px;
+  }
+
+  .priority-selector {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* ==========================================================
   13. DARK THEME
    ========================================================== */
 
