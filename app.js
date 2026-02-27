@@ -8,8 +8,9 @@
    Storage strategy:
    - localStorage = fast local cache (always available)
    - Google Sheets = source of truth (when signed in)
-   - On sign-in: Sheet data overwrites localStorage
+   - On sign-in: Sheet data overwrites localStorage (shared across all users)
    - On checkbox: localStorage updates instantly, Sheet syncs async
+   - Multi-user: one row per item, last action wins, checked_by tracks who
    ============================================================ */
 
 // ── Google Config ─────────────────────────────────────────────
@@ -228,7 +229,7 @@ function ensureHeaders() {
           valueInputOption: "RAW",
           resource: {
             values: [
-              ["item_id", "user_id", "checked", "updated_at"],
+              ["item_id", "checked_by", "checked", "updated_at"],
             ],
           },
         });
@@ -254,14 +255,11 @@ function syncFromSheet() {
 
       for (var i = 1; i < rows.length; i++) {
         var itemId = rows[i][0];
-        var userId = rows[i][1];
         var checked = rows[i][2];
+        var isChecked = checked === "TRUE";
 
-        if (userId === currentUser.email) {
-          var isChecked = checked === "TRUE";
-          Storage.setChecked(itemId, isChecked);
-          sheetRowMap[itemId] = i + 1;
-        }
+        Storage.setChecked(itemId, isChecked);
+        sheetRowMap[itemId] = i + 1;
       }
 
       render();
