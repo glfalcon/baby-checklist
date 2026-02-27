@@ -24,7 +24,7 @@ var GOOGLE_CONFIG = {
   scopes:
     "https://www.googleapis.com/auth/spreadsheets email profile",
   spreadsheetId: "1w7HcJwvlM-1meMxRAJdfQ3idzDJwHRRD5r9lI1BNWpw",
-  sheetName: "Sheet1",
+  sheetName: "Checklist",
 };
 
 // ── Category Icons ────────────────────────────────────────────
