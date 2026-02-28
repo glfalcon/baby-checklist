@@ -831,6 +831,13 @@ function renderDrawer() {
   var items = getAllItems().filter(function (i) {
     return i.section === state.activeSection && i.category === cat;
   });
+
+  // Sort by priority: essential first, then recommended, then nice-to-have
+  var priorityOrder = { essential: 0, recommended: 1, "nice-to-have": 2 };
+  items.sort(function (a, b) {
+    return (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2);
+  });
+
   var checkedCount = items.filter(function (i) {
     return Storage.isChecked(i.id);
   }).length;
