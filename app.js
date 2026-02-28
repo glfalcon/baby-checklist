@@ -328,11 +328,12 @@ return gapi.client.sheets.spreadsheets.values.batchGet({
         ],
       });
     })
-    .then(function (resp) {
+.then(function (resp) {
       var ranges = resp.result.valueRanges;
 
       // Checked states
-sheetRowMap = {};
+      var checklistRows = (ranges[0] && ranges[0].values) || [];
+      sheetRowMap = {};
       for (var i = 1; i < checklistRows.length; i++) {
         var row = checklistRows[i];
         var itemId = row[0];
