@@ -512,6 +512,18 @@ body {
   box-shadow: 0 2px 6px rgba(108, 99, 255, 0.3);
 }
 
+.card-progress-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--color-recommended);
+  background: var(--color-recommended-bg);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
 
 /* ==========================================================
    7. DRILL-DOWN DRAWER & OVERLAY

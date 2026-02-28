@@ -796,6 +796,9 @@ var essentialsLeft = catItems.filter(function (i) {
     var newItemsCount = catItems.filter(function (i) {
       return isNewItem(i);
     }).length;
+    var inProgressCount = catItems.filter(function (i) {
+      return !Storage.isChecked(i.id) && Storage.getStatus(i.id) === "in-progress";
+    }).length;
     var isComplete = pct === 100;
     var icon = CATEGORY_ICONS[cat] || "📦";
 
@@ -811,6 +814,8 @@ var essentialsLeft = catItems.filter(function (i) {
       html += '<div class="card-complete-badge">✓</div>';
     if (newItemsCount > 0)
       html += '<div class="card-new-badge">' + newItemsCount + ' new</div>';
+    if (inProgressCount > 0)
+      html += '<div class="card-progress-badge">🟡 ' + inProgressCount + ' in progress</div>';
     html += '<div class="card-icon">' + icon + "</div>";
     html += '<h3 class="card-name">' + cat + "</h3>";
     html +=
