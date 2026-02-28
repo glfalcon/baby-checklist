@@ -82,6 +82,7 @@ function getAllItems() {
 var Storage = {
   _prefix: "baby-checklist-",
   _statusPrefix: "baby-checklist-status-",
+  _completedAtPrefix: "baby-checklist-completed-",
 
   isChecked: function (id) {
     return localStorage.getItem(this._prefix + id) === "1";
@@ -90,10 +91,15 @@ var Storage = {
   setChecked: function (id, checked) {
     if (checked) {
       localStorage.setItem(this._prefix + id, "1");
+      // Store completion date
+      if (!this.getCompletedAt(id)) {
+        localStorage.setItem(this._completedAtPrefix + id, new Date().toISOString());
+      }
       // Clear in-progress status when marking as done
       localStorage.removeItem(this._statusPrefix + id);
     } else {
       localStorage.removeItem(this._prefix + id);
+      localStorage.removeItem(this._completedAtPrefix + id);
     }
   },
 
@@ -107,6 +113,19 @@ var Storage = {
       localStorage.setItem(this._statusPrefix + id, status);
     } else {
       localStorage.removeItem(this._statusPrefix + id);
+    }
+  },
+
+  // Completion date
+  getCompletedAt: function (id) {
+    return localStorage.getItem(this._completedAtPrefix + id);
+  },
+
+  setCompletedAt: function (id, date) {
+    if (date) {
+      localStorage.setItem(this._completedAtPrefix + id, date);
+    } else {
+      localStorage.removeItem(this._completedAtPrefix + id);
     }
   },
 
@@ -322,7 +341,7 @@ function syncFromSheet() {
 return gapi.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
         ranges: [
-          getRange(checklist, "A:E"),
+          getRange(checklist, "A:F"),
           getRange(custom, "A:I"),
           getRange(deleted, "A:C"),
         ],
@@ -333,7 +352,7 @@ return gapi.client.sheets.spreadsheets.values.batchGet({
 
       // Checked states
       var checklistRows = (ranges[0] && ranges[0].values) || [];
-      sheetRowMap = {};
+sheetRowMap = {};
       for (var i = 1; i < checklistRows.length; i++) {
         var row = checklistRows[i];
         var itemId = row[0];
@@ -343,12 +362,18 @@ return gapi.client.sheets.spreadsheets.values.batchGet({
 
         var checked = row[2] === "TRUE";
         var status = row[4] || null; // Column E = status
+        var completedAt = row[5] || null; // Column F = completedAt
 
         Storage.setChecked(itemId, checked);
         if (status) {
           Storage.setStatus(itemId, status);
         } else {
           Storage.setStatus(itemId, null);
+        }
+        if (completedAt) {
+          Storage.setCompletedAt(itemId, completedAt);
+        } else {
+          Storage.setCompletedAt(itemId, null);
         }
       }
 
@@ -394,11 +419,16 @@ function saveToSheet(itemId, checked) {
 
   updateSyncStatus("syncing");
 
+  var status = Storage.getStatus(itemId) || "";
+  var completedAt = checked ? new Date().toISOString() : "";
+
   var rowData = [
     itemId,
     currentUser.email,
     checked ? "TRUE" : "FALSE",
     new Date().toISOString(),
+    status,
+    completedAt,
   ];
 
   var promise;
@@ -408,7 +438,7 @@ function saveToSheet(itemId, checked) {
     var row = sheetRowMap[itemId];
     promise = gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-      range: getRange(sheet, "A" + row + ":D" + row),
+      range: getRange(sheet, "A" + row + ":F" + row),
       valueInputOption: "RAW",
       resource: { values: [rowData] },
     });
@@ -416,7 +446,7 @@ function saveToSheet(itemId, checked) {
     promise = gapi.client.sheets.spreadsheets.values
       .append({
         spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
-        range: getRange(sheet, "A:D"),
+        range: getRange(sheet, "A:F"),
         valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
         resource: { values: [rowData] },
@@ -552,14 +582,17 @@ function getFilteredItems() {
   return getAllItems().filter(function (item) {
     if (item.section !== state.activeSection) return false;
 
-    if (state.activeFilter !== "all") {
-      if (state.activeFilter === "pending") {
-        // Pending = not done yet (includes to-do and in-progress)
+if (state.activeFilter !== "all") {
+      if (state.activeFilter === "outstanding") {
+        // Outstanding = not done yet (includes to-do and in-progress)
         if (Storage.isChecked(item.id)) return false;
       } else if (state.activeFilter === "in-progress") {
         // In Progress only
         if (Storage.getStatus(item.id) !== "in-progress") return false;
         if (Storage.isChecked(item.id)) return false;
+      } else if (state.activeFilter === "completed") {
+        // Completed only
+        if (!Storage.isChecked(item.id)) return false;
       } else {
         if (item.priority !== state.activeFilter) return false;
       }
@@ -939,6 +972,13 @@ function buildDrawerItemHTML(item, checked) {
     ? '<span class="status-badge in-progress" aria-label="In progress">🟡</span>'
     : "";
 
+  // Hover actions for desktop (hidden on mobile)
+  var hoverActions = '<div class="hover-actions">' +
+    '<button class="hover-btn hover-btn-progress' + (status === "in-progress" ? " active" : "") +
+    '" onclick="event.stopPropagation(); quickSetStatus(\'' + item.id + '\', \'in-progress\')" title="In Progress">🟡</button>' +
+    '<button class="hover-btn hover-btn-done" onclick="event.stopPropagation(); quickSetDone(\'' + item.id + '\')" title="Mark Done">✅</button>' +
+    '</div>';
+
   return (
     '<div class="drawer-item priority-' +
     item.priority +
@@ -977,6 +1017,7 @@ function buildDrawerItemHTML(item, checked) {
     item.description +
     "</div>" +
     "</div>" +
+    hoverActions +
     '<button class="item-delete" data-delete-id="' +
     item.id +
     '" onclick="event.stopPropagation(); removeItem(\'' +
@@ -1348,6 +1389,27 @@ function setItemStatusDone() {
     syncCheckToSheet(statusSheetItemId, true);
   }
   closeStatusSheet();
+  render();
+}
+
+// Quick actions for desktop hover buttons
+function quickSetStatus(itemId, status) {
+  var currentStatus = Storage.getStatus(itemId);
+  // Toggle: if already this status, clear it
+  var newStatus = (currentStatus === status) ? null : status;
+  Storage.setStatus(itemId, newStatus);
+  if (state.isOnline) {
+    syncStatusToSheet(itemId, newStatus);
+  }
+  render();
+}
+
+function quickSetDone(itemId) {
+  var isChecked = Storage.isChecked(itemId);
+  Storage.setChecked(itemId, !isChecked);
+  if (state.isOnline) {
+    syncCheckToSheet(itemId, !isChecked);
+  }
   render();
 }
 

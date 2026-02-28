@@ -1600,6 +1600,64 @@ body {
   color: var(--color-essential);
 }
 
+/* Hover actions for desktop */
+.hover-actions {
+  display: none;
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  gap: 6px;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.drawer-item:hover .hover-actions {
+  opacity: 1;
+}
+
+.hover-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.hover-btn:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-sm);
+}
+
+.hover-btn-progress:hover,
+.hover-btn-progress.active {
+  background: var(--color-recommended-bg);
+  border-color: var(--color-recommended);
+}
+
+.hover-btn-done:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #22c55e;
+}
+
+/* Show hover actions only on desktop */
+@media (min-width: 521px) {
+  .hover-actions {
+    display: flex;
+  }
+}
+
+/* Hide hover actions on completed items */
+.drawer-item.checked .hover-actions {
+  display: none;
+}
+
 /* Mobile adjustments for modal */
 @media (max-width: 520px) {
   .fab {
