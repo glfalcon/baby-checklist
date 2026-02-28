@@ -927,9 +927,15 @@ function renderDrawer() {
     return getPriorityOrder(a.priority) - getPriorityOrder(b.priority);
   });
 
-  var checkedCount = items.filter(function (i) {
+  // Split into active and completed
+  var activeItems = items.filter(function (i) {
+    return !Storage.isChecked(i.id);
+  });
+  var completedItems = items.filter(function (i) {
     return Storage.isChecked(i.id);
-  }).length;
+  });
+
+  var checkedCount = completedItems.length;
   var total = items.length;
   var pct =
     total > 0 ? Math.round((checkedCount / total) * 100) : 0;
@@ -942,13 +948,35 @@ function renderDrawer() {
   var scrollTop = dom.drawerBody.scrollTop;
 
   var html = "";
-  items.forEach(function (item) {
-    var checked = Storage.isChecked(item.id);
-    html += buildDrawerItemHTML(item, checked);
+
+  // Active items first
+  activeItems.forEach(function (item) {
+    html += buildDrawerItemHTML(item, false);
   });
+
+  // Collapsible completed section
+  if (completedItems.length > 0) {
+    var isExpanded = state.completedExpanded !== false; // default to expanded
+    html += '<div class="completed-section">';
+    html += '<button class="completed-toggle" onclick="toggleCompletedSection()">';
+    html += '<span class="completed-toggle-icon">' + (isExpanded ? '▼' : '▶') + '</span>';
+    html += '<span class="completed-toggle-text">Completed (' + completedItems.length + ')</span>';
+    html += '</button>';
+    html += '<div class="completed-items' + (isExpanded ? ' expanded' : '') + '">';
+    completedItems.forEach(function (item) {
+      html += buildDrawerItemHTML(item, true);
+    });
+    html += '</div>';
+    html += '</div>';
+  }
 
   dom.drawerBody.innerHTML = html;
   dom.drawerBody.scrollTop = scrollTop;
+}
+
+function toggleCompletedSection() {
+  state.completedExpanded = !state.completedExpanded;
+  renderDrawer();
 }
 
 function buildDrawerItemHTML(item, checked) {
@@ -1024,9 +1052,83 @@ function buildDrawerItemHTML(item, checked) {
 // ── Master Render ─────────────────────────────────────────────
 
 function render() {
-  renderGrid();
-  renderHero();
-  renderDrawer();
+  if (state.activeSection === "completed-view") {
+    renderCompletedView();
+    renderHero();
+  } else {
+    renderGrid();
+    renderHero();
+    renderDrawer();
+  }
+}
+
+// ── Completed View ────────────────────────────────────────────
+
+function renderCompletedView() {
+  var completedItems = getAllItems().filter(function (item) {
+    return Storage.isChecked(item.id);
+  });
+
+  // Sort by completion date (most recent first)
+  completedItems.sort(function (a, b) {
+    var dateA = Storage.getCompletedAt(a.id) || "1970-01-01";
+    var dateB = Storage.getCompletedAt(b.id) || "1970-01-01";
+    return new Date(dateB) - new Date(dateA);
+  });
+
+  var html = "";
+
+  if (completedItems.length === 0) {
+    html = '<div class="completed-empty">';
+    html += '<span class="completed-empty-icon">📦</span>';
+    html += '<h3>No completed items yet</h3>';
+    html += '<p>Items you mark as done will appear here.</p>';
+    html += '</div>';
+  } else {
+    html = '<div class="completed-list">';
+    html += '<div class="completed-list-header">';
+    html += '<span class="completed-col-item">Item</span>';
+    html += '<span class="completed-col-category">Category</span>';
+    html += '<span class="completed-col-date">Completed</span>';
+    html += '</div>';
+
+    completedItems.forEach(function (item) {
+      var completedAt = Storage.getCompletedAt(item.id);
+      var dateStr = completedAt ? formatCompletedDate(completedAt) : "—";
+      var icon = CATEGORY_ICONS[item.category] || "📦";
+
+      html += '<div class="completed-row" data-id="' + item.id + '">';
+      html += '<div class="completed-col-item">';
+      html += '<span class="completed-item-name">' + item.name + '</span>';
+      html += '<span class="completed-item-section">' + (item.section === "hospital-bag" ? "🏥" : "👶") + '</span>';
+      html += '</div>';
+      html += '<div class="completed-col-category">' + icon + ' ' + item.category + '</div>';
+      html += '<div class="completed-col-date">' + dateStr + '</div>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+  }
+
+  dom.categoryGrid.innerHTML = html;
+  dom.emptyState.style.display = "none";
+}
+
+function formatCompletedDate(isoString) {
+  var date = new Date(isoString);
+  var now = new Date();
+  var diffMs = now - date;
+  var diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "Today";
+  } else if (diffDays === 1) {
+    return "Yesterday";
+  } else if (diffDays < 7) {
+    return diffDays + " days ago";
+  } else {
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  }
 }
 
 // ── Drawer Lifecycle ──────────────────────────────────────────
