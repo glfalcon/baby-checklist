@@ -672,6 +672,9 @@ body {
   position: relative;
   border-left: 3px solid transparent;
   margin-bottom: 4px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .drawer-item:hover {

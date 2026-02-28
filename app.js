@@ -1409,22 +1409,28 @@ function initStatusSheet() {
   var overlay = document.getElementById("statusSheetOverlay");
   overlay.addEventListener("click", closeStatusSheet);
 
-  // Long press for drawer items
+// Long press for drawer items
   document.getElementById("drawerBody").addEventListener("touchstart", function (e) {
     var item = e.target.closest(".drawer-item");
     if (!item) return;
+    // Don't interfere with checkbox taps
+    if (e.target.closest(".checkbox-wrapper") || e.target.closest(".item-delete")) return;
     longPressTriggered = false;
     longPressTimer = setTimeout(function () {
       longPressTriggered = true;
+      e.preventDefault();
       var itemId = item.dataset.id;
       var itemName = item.querySelector(".item-name").textContent;
       openStatusSheet(itemId, itemName);
       if (navigator.vibrate) navigator.vibrate(50);
     }, 600);
-  });
+  }, { passive: false });
 
-  document.getElementById("drawerBody").addEventListener("touchend", function () {
+  document.getElementById("drawerBody").addEventListener("touchend", function (e) {
     clearTimeout(longPressTimer);
+    if (longPressTriggered) {
+      e.preventDefault();
+    }
   });
 
   document.getElementById("drawerBody").addEventListener("touchmove", function () {
