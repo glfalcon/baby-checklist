@@ -972,12 +972,7 @@ function buildDrawerItemHTML(item, checked) {
     ? '<span class="status-badge in-progress" aria-label="In progress">🟡</span>'
     : "";
 
-  // Hover actions for desktop (hidden on mobile)
-  var hoverActions = '<div class="hover-actions">' +
-    '<button class="hover-btn hover-btn-progress' + (status === "in-progress" ? " active" : "") +
-    '" onclick="event.stopPropagation(); quickSetStatus(\'' + item.id + '\', \'in-progress\')" title="In Progress">🟡</button>' +
-    '<button class="hover-btn hover-btn-done" onclick="event.stopPropagation(); quickSetDone(\'' + item.id + '\')" title="Mark Done">✅</button>' +
-    '</div>';
+// Hover actions removed - using click-to-open-status instead
 
   return (
     '<div class="drawer-item priority-' +
@@ -1017,7 +1012,6 @@ function buildDrawerItemHTML(item, checked) {
     item.description +
     "</div>" +
     "</div>" +
-    hoverActions +
     '<button class="item-delete" data-delete-id="' +
     item.id +
     '" onclick="event.stopPropagation(); removeItem(\'' +
@@ -1472,7 +1466,20 @@ function initStatusSheet() {
   var overlay = document.getElementById("statusSheetOverlay");
   overlay.addEventListener("click", closeStatusSheet);
 
-// Long press for drawer items
+  // Click on drawer item (not checkbox/delete) to open status menu
+  document.getElementById("drawerBody").addEventListener("click", function (e) {
+    // Ignore if clicking checkbox, delete button, or their children
+    if (e.target.closest(".checkbox-wrapper") || e.target.closest(".item-delete")) return;
+
+    var item = e.target.closest(".drawer-item");
+    if (!item) return;
+
+    var itemId = item.dataset.id;
+    var itemName = item.querySelector(".item-name").textContent;
+    openStatusSheet(itemId, itemName);
+  });
+
+  // Long press for mobile (as backup / for users who expect it)
   document.getElementById("drawerBody").addEventListener("touchstart", function (e) {
     var item = e.target.closest(".drawer-item");
     if (!item) return;
@@ -1498,16 +1505,6 @@ function initStatusSheet() {
 
   document.getElementById("drawerBody").addEventListener("touchmove", function () {
     clearTimeout(longPressTimer);
-  });
-
-  // Right-click for desktop
-  document.getElementById("drawerBody").addEventListener("contextmenu", function (e) {
-    var item = e.target.closest(".drawer-item");
-    if (!item) return;
-    e.preventDefault();
-    var itemId = item.dataset.id;
-    var itemName = item.querySelector(".item-name").textContent;
-    openStatusSheet(itemId, itemName);
   });
 }
 
