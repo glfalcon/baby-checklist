@@ -81,6 +81,7 @@ function getAllItems() {
 
 var Storage = {
   _prefix: "baby-checklist-",
+  _statusPrefix: "baby-checklist-status-",
 
   isChecked: function (id) {
     return localStorage.getItem(this._prefix + id) === "1";
@@ -89,8 +90,23 @@ var Storage = {
   setChecked: function (id, checked) {
     if (checked) {
       localStorage.setItem(this._prefix + id, "1");
+      // Clear in-progress status when marking as done
+      localStorage.removeItem(this._statusPrefix + id);
     } else {
       localStorage.removeItem(this._prefix + id);
+    }
+  },
+
+  // Status: "in-progress" or null (to-do)
+  getStatus: function (id) {
+    return localStorage.getItem(this._statusPrefix + id);
+  },
+
+  setStatus: function (id, status) {
+    if (status) {
+      localStorage.setItem(this._statusPrefix + id, status);
+    } else {
+      localStorage.removeItem(this._statusPrefix + id);
     }
   },
 
@@ -527,6 +543,11 @@ function getFilteredItems() {
 
     if (state.activeFilter !== "all") {
       if (state.activeFilter === "pending") {
+        // Pending = not done yet (includes to-do and in-progress)
+        if (Storage.isChecked(item.id)) return false;
+      } else if (state.activeFilter === "in-progress") {
+        // In Progress only
+        if (Storage.getStatus(item.id) !== "in-progress") return false;
         if (Storage.isChecked(item.id)) return false;
       } else {
         if (item.priority !== state.activeFilter) return false;
@@ -882,7 +903,9 @@ function renderDrawer() {
 }
 
 function buildDrawerItemHTML(item, checked) {
+  var status = Storage.getStatus(item.id);
   var checkedClass = checked ? " checked" : "";
+  var statusClass = status === "in-progress" ? " in-progress" : "";
   var checkedAttr = checked ? " checked" : "";
   var priorityLabel =
     item.priority === "nice-to-have"
@@ -896,11 +919,15 @@ function buildDrawerItemHTML(item, checked) {
   var newBadge = isNewItem(item)
     ? '<span class="new-badge" aria-label="Recently added">NEW</span>'
     : "";
+  var statusBadge = (!checked && status === "in-progress")
+    ? '<span class="status-badge in-progress" aria-label="In progress">🟡</span>'
+    : "";
 
   return (
     '<div class="drawer-item priority-' +
     item.priority +
     checkedClass +
+    statusClass +
     '" data-id="' +
     item.id +
     '">' +
@@ -921,6 +948,7 @@ function buildDrawerItemHTML(item, checked) {
     '<span class="item-name">' +
     item.name +
     "</span>" +
+    statusBadge +
     newBadge +
     qtyLabel +
     '<span class="priority-badge ' +
@@ -1268,6 +1296,87 @@ function initApp() {
 
 // ── Bootstrap ─────────────────────────────────────────────────
 
+var statusSheetItemId = null;
+var longPressTimer = null;
+var longPressTriggered = false;
+
+function openStatusSheet(itemId, itemName) {
+  statusSheetItemId = itemId;
+  document.getElementById("statusSheetTitle").textContent = itemName || "Set Status";
+  document.getElementById("statusSheetOverlay").classList.add("active");
+  document.getElementById("statusSheet").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeStatusSheet() {
+  statusSheetItemId = null;
+  document.getElementById("statusSheetOverlay").classList.remove("active");
+  document.getElementById("statusSheet").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function setItemStatus(status) {
+  if (!statusSheetItemId) return;
+  Storage.setStatus(statusSheetItemId, status);
+  if (state.isOnline) {
+    syncStatusToSheet(statusSheetItemId, status);
+  }
+  closeStatusSheet();
+  render();
+}
+
+function setItemStatusDone() {
+  if (!statusSheetItemId) return;
+  Storage.setChecked(statusSheetItemId, true);
+  if (state.isOnline) {
+    syncCheckToSheet(statusSheetItemId, true);
+  }
+  closeStatusSheet();
+  render();
+}
+
+function syncStatusToSheet(itemId, status) {
+  // Sync status to Google Sheets (future enhancement)
+  // For now, status is stored in localStorage only
+}
+
+function initStatusSheet() {
+  var overlay = document.getElementById("statusSheetOverlay");
+  overlay.addEventListener("click", closeStatusSheet);
+
+  // Long press for drawer items
+  document.getElementById("drawerBody").addEventListener("touchstart", function (e) {
+    var item = e.target.closest(".drawer-item");
+    if (!item) return;
+    longPressTriggered = false;
+    longPressTimer = setTimeout(function () {
+      longPressTriggered = true;
+      var itemId = item.dataset.id;
+      var itemName = item.querySelector(".item-name").textContent;
+      openStatusSheet(itemId, itemName);
+      if (navigator.vibrate) navigator.vibrate(50);
+    }, 600);
+  });
+
+  document.getElementById("drawerBody").addEventListener("touchend", function () {
+    clearTimeout(longPressTimer);
+  });
+
+  document.getElementById("drawerBody").addEventListener("touchmove", function () {
+    clearTimeout(longPressTimer);
+  });
+
+  // Right-click for desktop
+  document.getElementById("drawerBody").addEventListener("contextmenu", function (e) {
+    var item = e.target.closest(".drawer-item");
+    if (!item) return;
+    e.preventDefault();
+    var itemId = item.dataset.id;
+    var itemName = item.querySelector(".item-name").textContent;
+    openStatusSheet(itemId, itemName);
+  });
+}
+
 window.onload = function () {
   initTheme();
   if (typeof gapi !== "undefined") {
@@ -1277,4 +1386,5 @@ window.onload = function () {
     gisLoaded();
   }
   initApp();
+  initStatusSheet();
 };

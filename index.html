@@ -129,11 +129,12 @@
           </svg>
           <input type="text" id="searchInput" placeholder="Search items...">
         </div>
-        <div class="filter-pills" id="filterPills">
+<div class="filter-pills" id="filterPills">
           <button class="pill active" data-filter="all">All</button>
           <button class="pill" data-filter="essential">🔴 Essential</button>
           <button class="pill" data-filter="recommended">🟡 Recommended</button>
           <button class="pill" data-filter="nice-to-have">🟣 Nice to Have</button>
+          <button class="pill" data-filter="in-progress">🟡 In Progress</button>
           <button class="pill" data-filter="pending">⏳ Pending</button>
         </div>
       </div>
@@ -181,7 +182,7 @@
       <span>＋</span>
     </button>
 
-    <!-- ── Add Item Modal ──────────────────────────────────────── -->
+<!-- ── Add Item Modal ──────────────────────────────────────── -->
     <div class="modal-overlay" id="addItemModal" style="display:none">
       <div class="modal-card">
         <div class="modal-header">
@@ -228,6 +229,32 @@
           </div>
           <button type="submit" class="btn-add-item">Add Item</button>
         </form>
+      </div>
+    </div>
+
+    <!-- ── Status Bottom Sheet ──────────────────────────────────── -->
+    <div class="status-sheet-overlay" id="statusSheetOverlay"></div>
+    <div class="status-sheet" id="statusSheet">
+      <div class="status-sheet-header">
+        <span class="status-sheet-title" id="statusSheetTitle">Set Status</span>
+        <button class="status-sheet-close" onclick="closeStatusSheet()">✕</button>
+      </div>
+      <div class="status-sheet-options">
+        <button class="status-option" data-status="in-progress" onclick="setItemStatus('in-progress')">
+          <span class="status-option-icon">🟡</span>
+          <span class="status-option-label">In Progress</span>
+          <span class="status-option-desc">Researching or buying</span>
+        </button>
+        <button class="status-option" data-status="done" onclick="setItemStatusDone()">
+          <span class="status-option-icon">✅</span>
+          <span class="status-option-label">Mark as Done</span>
+          <span class="status-option-desc">Item acquired</span>
+        </button>
+        <button class="status-option" data-status="clear" onclick="setItemStatus(null)">
+          <span class="status-option-icon">⬜</span>
+          <span class="status-option-label">Clear Status</span>
+          <span class="status-option-desc">Reset to To Do</span>
+        </button>
       </div>
     </div>
 
