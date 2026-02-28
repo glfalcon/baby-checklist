@@ -1171,14 +1171,9 @@ function onCheckboxChange(e) {
 }
 
 function onDrawerItemClick(e) {
-  var item = e.target.closest(".drawer-item");
-  if (!item) return;
-  if (e.target.closest(".checkbox-wrapper")) return;
-  if (e.target.closest(".item-delete")) return;
-
-  var id = item.dataset.id;
-  var isChecked = Storage.isChecked(id);
-  toggleItem(id, !isChecked);
+  // Status sheet click handler in initStatusSheet() handles this now
+  // This function is kept but disabled to avoid double-handling
+  return;
 }
 
 function onCardClick(e) {
