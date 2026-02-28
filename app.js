@@ -325,7 +325,7 @@ function syncFromSheet() {
         sheetRowMap[itemId] = i + 1;
       }
 
-      // Custom items
+// Custom items
       var customRows = (ranges[1] && ranges[1].values) || [];
       customItems = [];
       for (var j = 1; j < customRows.length; j++) {
@@ -339,6 +339,7 @@ function syncFromSheet() {
             description: r[4] || "",
             priority: r[5] || "recommended",
             quantity: parseInt(r[6]) || 1,
+            addedAt: r[8] || null,
           });
         }
       }
@@ -556,6 +557,13 @@ function generateItemId() {
   );
 }
 
+function isNewItem(item) {
+  if (!item.addedAt) return false;
+  var addedDate = new Date(item.addedAt);
+  var threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
+  return addedDate.getTime() > threeDaysAgo;
+}
+
 // ── Toggle Item (unified handler) ─────────────────────────────
 
 function toggleItem(id, checked) {
@@ -683,7 +691,7 @@ function handleAddItem(e) {
     ? activeBtn.dataset.priority
     : "recommended";
 
-  var newItem = {
+var newItem = {
     id: generateItemId(),
     section: section,
     category: category,
@@ -691,6 +699,7 @@ function handleAddItem(e) {
     description: description,
     priority: priority,
     quantity: quantity,
+    addedAt: new Date().toISOString(),
   };
 
   customItems.push(newItem);
@@ -750,8 +759,11 @@ function renderGrid() {
     var total = catItems.length;
     var pct =
       total > 0 ? Math.round((checkedCount / total) * 100) : 0;
-    var essentialsLeft = catItems.filter(function (i) {
+var essentialsLeft = catItems.filter(function (i) {
       return i.priority === "essential" && !Storage.isChecked(i.id);
+    }).length;
+    var newItemsCount = catItems.filter(function (i) {
+      return isNewItem(i);
     }).length;
     var isComplete = pct === 100;
     var icon = CATEGORY_ICONS[cat] || "📦";
@@ -766,6 +778,8 @@ function renderGrid() {
       's">';
     if (isComplete)
       html += '<div class="card-complete-badge">✓</div>';
+    if (newItemsCount > 0)
+      html += '<div class="card-new-badge">' + newItemsCount + ' new</div>';
     html += '<div class="card-icon">' + icon + "</div>";
     html += '<h3 class="card-name">' + cat + "</h3>";
     html +=
@@ -874,6 +888,9 @@ function buildDrawerItemHTML(item, checked) {
     item.quantity > 1
       ? '<span class="item-qty">×' + item.quantity + "</span>"
       : "";
+  var newBadge = isNewItem(item)
+    ? '<span class="new-badge" aria-label="Recently added">NEW</span>'
+    : "";
 
   return (
     '<div class="drawer-item priority-' +
@@ -899,6 +916,7 @@ function buildDrawerItemHTML(item, checked) {
     '<span class="item-name">' +
     item.name +
     "</span>" +
+    newBadge +
     qtyLabel +
     '<span class="priority-badge ' +
     item.priority +
