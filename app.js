@@ -847,9 +847,14 @@ function renderDrawer() {
   });
 
   // Sort by priority: essential first, then recommended, then nice-to-have
-  var priorityOrder = { essential: 0, recommended: 1, "nice-to-have": 2 };
+  function getPriorityOrder(priority) {
+    if (priority === "essential") return 0;
+    if (priority === "recommended") return 1;
+    if (priority === "nice-to-have") return 2;
+    return 3;
+  }
   items.sort(function (a, b) {
-    return (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2);
+    return getPriorityOrder(a.priority) - getPriorityOrder(b.priority);
   });
 
   var checkedCount = items.filter(function (i) {
