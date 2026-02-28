@@ -1960,95 +1960,62 @@ body,
 }
 
 .completed-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.completed-card {
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
-  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  transition: all var(--transition);
 }
 
-.completed-list-header {
-  display: grid;
-  grid-template-columns: 1fr 150px 100px;
-  gap: 16px;
-  padding: 12px 16px;
-  background: var(--color-surface-hover);
-  border-bottom: 1px solid var(--color-border);
-  font-size: 0.75rem;
+.completed-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.completed-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.completed-card-name {
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-text-secondary);
-}
-
-.completed-row {
-  display: grid;
-  grid-template-columns: 1fr 150px 100px;
-  gap: 16px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--color-border);
-  transition: background var(--transition);
-}
-
-.completed-row:last-child {
-  border-bottom: none;
-}
-
-.completed-row:hover {
-  background: var(--color-surface-hover);
-}
-
-.completed-col-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.completed-item-name {
-  font-weight: 500;
+  font-size: 0.95rem;
   color: var(--color-text);
+  line-height: 1.3;
 }
 
-.completed-item-section {
-  font-size: 0.85rem;
+.completed-card-section {
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.completed-col-category {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
+.completed-card-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.completed-col-date {
-  font-size: 0.85rem;
+.completed-card-category {
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
-  text-align: right;
 }
 
-/* Mobile responsive for completed view */
-@media (max-width: 600px) {
-  .completed-list-header {
-    display: none;
-  }
-
-  .completed-row {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .completed-col-category,
-  .completed-col-date {
-    font-size: 0.8rem;
-  }
-
-  .completed-col-date {
-    text-align: left;
-  }
-
-  .completed-col-date::before {
-    content: "Completed: ";
-  }
+.completed-card-date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface-hover);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
 }
 
 /* Desktop context menu positioning */

@@ -1086,24 +1086,22 @@ function renderCompletedView() {
     html += '</div>';
   } else {
     html = '<div class="completed-list">';
-    html += '<div class="completed-list-header">';
-    html += '<span class="completed-col-item">Item</span>';
-    html += '<span class="completed-col-category">Category</span>';
-    html += '<span class="completed-col-date">Completed</span>';
-    html += '</div>';
 
     completedItems.forEach(function (item) {
       var completedAt = Storage.getCompletedAt(item.id);
       var dateStr = completedAt ? formatCompletedDate(completedAt) : "—";
       var icon = CATEGORY_ICONS[item.category] || "📦";
+      var sectionIcon = item.section === "hospital-bag" ? "🏥" : "👶";
 
-      html += '<div class="completed-row" data-id="' + item.id + '">';
-      html += '<div class="completed-col-item">';
-      html += '<span class="completed-item-name">' + item.name + '</span>';
-      html += '<span class="completed-item-section">' + (item.section === "hospital-bag" ? "🏥" : "👶") + '</span>';
+      html += '<div class="completed-card">';
+      html += '<div class="completed-card-header">';
+      html += '<span class="completed-card-name">' + item.name + '</span>';
+      html += '<span class="completed-card-section">' + sectionIcon + '</span>';
       html += '</div>';
-      html += '<div class="completed-col-category">' + icon + ' ' + item.category + '</div>';
-      html += '<div class="completed-col-date">' + dateStr + '</div>';
+      html += '<div class="completed-card-meta">';
+      html += '<span class="completed-card-category">' + icon + ' ' + item.category + '</span>';
+      html += '<span class="completed-card-date">✓ ' + dateStr + '</span>';
+      html += '</div>';
       html += '</div>';
     });
 
