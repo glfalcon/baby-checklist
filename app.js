@@ -319,10 +319,10 @@ function syncFromSheet() {
       ]);
     })
     .then(function () {
-      return gapi.client.sheets.spreadsheets.values.batchGet({
+return gapi.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
         ranges: [
-          getRange(checklist, "A:D"),
+          getRange(checklist, "A:E"),
           getRange(custom, "A:I"),
           getRange(deleted, "A:C"),
         ],
@@ -332,13 +332,23 @@ function syncFromSheet() {
       var ranges = resp.result.valueRanges;
 
       // Checked states
-      var checkRows = (ranges[0] && ranges[0].values) || [];
-      sheetRowMap = {};
-      for (var i = 1; i < checkRows.length; i++) {
-        var itemId = checkRows[i][0];
-        var checked = checkRows[i][2];
-        Storage.setChecked(itemId, checked === "TRUE");
+sheetRowMap = {};
+      for (var i = 1; i < checklistRows.length; i++) {
+        var row = checklistRows[i];
+        var itemId = row[0];
+        if (!itemId) continue;
+
         sheetRowMap[itemId] = i + 1;
+
+        var checked = row[2] === "TRUE";
+        var status = row[4] || null; // Column E = status
+
+        Storage.setChecked(itemId, checked);
+        if (status) {
+          Storage.setStatus(itemId, status);
+        } else {
+          Storage.setStatus(itemId, null);
+        }
       }
 
 // Custom items
@@ -1336,8 +1346,58 @@ function setItemStatusDone() {
 }
 
 function syncStatusToSheet(itemId, status) {
-  // Sync status to Google Sheets (future enhancement)
-  // For now, status is stored in localStorage only
+  if (!state.isOnline) return;
+
+  if (sheetRowMap[itemId]) {
+    // Update existing row - column E for status
+    var row = sheetRowMap[itemId];
+    gapi.client.sheets.spreadsheets.values
+      .update({
+        spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
+        range: GOOGLE_CONFIG.sheetName + "!E" + row,
+        valueInputOption: "RAW",
+        resource: {
+          values: [[status || ""]],
+        },
+      })
+      .then(function () {
+        console.log("Status synced:", itemId, status);
+      })
+      .catch(function (err) {
+        console.error("Status sync failed:", err);
+      });
+  } else {
+    // New item - append row with status in column E
+    gapi.client.sheets.spreadsheets.values
+      .append({
+        spreadsheetId: GOOGLE_CONFIG.spreadsheetId,
+        range: GOOGLE_CONFIG.sheetName + "!A:E",
+        valueInputOption: "RAW",
+        insertDataOption: "INSERT_ROWS",
+        resource: {
+          values: [
+            [
+              itemId,
+              currentUser.email,
+              "FALSE",
+              new Date().toISOString(),
+              status || "",
+            ],
+          ],
+        },
+      })
+      .then(function (response) {
+        var range = response.result.updates.updatedRange;
+        var match = range.match(/:E(\d+)$/);
+        if (match) {
+          sheetRowMap[itemId] = parseInt(match[1]);
+        }
+        console.log("Status appended:", itemId, status);
+      })
+      .catch(function (err) {
+        console.error("Status append failed:", err);
+      });
+  }
 }
 
 function initStatusSheet() {
