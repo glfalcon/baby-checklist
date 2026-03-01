@@ -108,52 +108,6 @@ var Storage = {
     return localStorage.getItem(this._statusPrefix + id);
   },
 
-  setStatus: function (id, status) {
-    if (status) {
-      localStorage.setItem(this._statusPrefix + id, status);
-    } else {
-      localStorage.removeItem(this._statusPrefix + id);
-    }
-  },
-
-  // Completion date
-  getCompletedAt: function (id) {
-    return localStorage.getItem(this._completedAtPrefix + id);
-  },
-
-  setCompletedAt: function (id, date) {
-    if (date) {
-      localStorage.setItem(this._completedAtPrefix + id, date);
-    } else {
-      localStorage.removeItem(this._completedAtPrefix + id);
-    }
-  },
-
-  clearAll: function () {
-    var keys = Object.keys(localStorage).filter(function (k) {
-      return k.startsWith("baby-checklist-");
-    });
-    keys.forEach(function (k) {
-      localStorage.removeItem(k);
-    });
-  },
-};
-
-// ── Google API Init ───────────────────────────────────────────
-
-function gapiLoaded() {
-  gapi.load("client", function () {
-    gapi.client
-      .init({
-        discoveryDocs: GOOGLE_CONFIG.discoveryDocs,
-      })
-      .then(function () {
-        gapiInited = true;
-        maybeEnableAuth();
-      });
-  });
-}
-
 function gisLoaded() {
   // Initialize Google Sign-In with the new Identity Services API
   google.accounts.id.initialize({
@@ -175,15 +129,56 @@ function gisLoaded() {
     }
   );
 
-  // Also set up token client for Sheets API access
+  // Set up token client - use redirect mode for PWA compatibility
+  var uxMode = isPWAStandalone() ? "redirect" : "popup";
+  
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CONFIG.clientId,
     scope: GOOGLE_CONFIG.scopes,
-    callback: handleTokenCallback,
+    ux_mode: uxMode,
+    callback: uxMode === "popup" ? handleTokenCallback : undefined,
+    redirect_uri: uxMode === "redirect" ? window.location.origin + window.location.pathname : undefined,
   });
 
   gisInited = true;
   maybeEnableAuth();
+  
+  // Check if we're returning from a redirect auth flow
+  checkRedirectAuth();
+}
+
+function checkRedirectAuth() {
+  // Check URL for access token from redirect flow
+  var hash = window.location.hash;
+  if (hash && hash.includes("access_token")) {
+    var params = new URLSearchParams(hash.substring(1));
+    var accessToken = params.get("access_token");
+    var expiresIn = params.get("expires_in");
+    
+    if (accessToken) {
+      // Set the token manually
+      gapi.client.setToken({
+        access_token: accessToken,
+        expires_in: expiresIn,
+      });
+      
+      // Clear the hash from URL
+      history.replaceState(null, "", window.location.pathname);
+      
+      // Continue with auth
+      state.isOnline = true;
+      updateAuthUI();
+      syncFromSheet();
+    }
+  }
+}
+
+function isPWAStandalone() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||
+    document.referrer.includes('android-app://')
+  );
 }
 
 function maybeEnableAuth() {
@@ -221,7 +216,7 @@ function handleCredentialResponse(response) {
   };
   localStorage.setItem("baby-checklist-user", JSON.stringify(currentUser));
 
-  // Now request access token for Sheets API
+  // Request Sheets API access
   requestSheetsAccess();
 }
 
@@ -234,7 +229,7 @@ function requestSheetsAccess() {
     updateAuthUI();
     syncFromSheet();
   } else {
-    // Request access token (this may show a popup, but it's smaller/faster)
+    // Request access token - will use redirect in PWA mode, popup otherwise
     tokenClient.requestAccessToken({ prompt: "" });
   }
 }
