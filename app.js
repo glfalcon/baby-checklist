@@ -108,210 +108,108 @@ var Storage = {
     return localStorage.getItem(this._statusPrefix + id);
   },
 
-function gisLoaded() {
-  // Initialize Google Sign-In with the new Identity Services API
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CONFIG.clientId,
-    callback: handleCredentialResponse,
-    auto_select: true,
-    context: 'signin',
-  });
-
-  // Render the Google Sign-In button
-  google.accounts.id.renderButton(
-    document.getElementById("googleSignInContainer"),
-    {
-      theme: "outline",
-      size: "large",
-      width: 280,
-      text: "signin_with",
-      shape: "rectangular",
+  setStatus: function (id, status) {
+    if (status) {
+      localStorage.setItem(this._statusPrefix + id, status);
+    } else {
+      localStorage.removeItem(this._statusPrefix + id);
     }
-  );
+  },
 
-  // Set up token client - use redirect mode for PWA compatibility
-  var uxMode = isPWAStandalone() ? "redirect" : "popup";
+  // Completion date
+  getCompletedAt: function (id) {
+    return localStorage.getItem(this._completedAtPrefix + id);
+  },
 
+  setCompletedAt: function (id, date) {
+    if (date) {
+      localStorage.setItem(this._completedAtPrefix + id, date);
+    } else {
+      localStorage.removeItem(this._completedAtPrefix + id);
+    }
+  },
+
+  clearAll: function () {
+    var keys = Object.keys(localStorage).filter(function (k) {
+      return k.startsWith("baby-checklist-");
+    });
+    keys.forEach(function (k) {
+      localStorage.removeItem(k);
+    });
+  },
+};
+
+// ── Google API Init ───────────────────────────────────────────
+
+function gapiLoaded() {
+  gapi.load("client", function () {
+    gapi.client
+      .init({
+        discoveryDocs: GOOGLE_CONFIG.discoveryDocs,
+      })
+      .then(function () {
+        gapiInited = true;
+        maybeEnableAuth();
+      });
+  });
+}
+
+function gisLoaded() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CONFIG.clientId,
     scope: GOOGLE_CONFIG.scopes,
-    ux_mode: uxMode,
-    callback: uxMode === "popup" ? handleTokenCallback : undefined,
-    redirect_uri: uxMode === "redirect" ? window.location.origin + window.location.pathname : undefined,
+    callback: handleAuthCallback,
   });
-
   gisInited = true;
   maybeEnableAuth();
-
-  // Check if we're returning from a redirect auth flow
-  checkRedirectAuth();
-}
-
-function checkRedirectAuth() {
-  // Check URL for access token from redirect flow
-  var hash = window.location.hash;
-  if (hash && hash.includes("access_token")) {
-    var params = new URLSearchParams(hash.substring(1));
-    var accessToken = params.get("access_token");
-    var expiresIn = params.get("expires_in");
-
-    if (accessToken) {
-      // Set the token manually
-      gapi.client.setToken({
-        access_token: accessToken,
-        expires_in: expiresIn,
-      });
-
-      // Clear the hash from URL
-      history.replaceState(null, "", window.location.pathname);
-
-      // Continue with auth
-      state.isOnline = true;
-      updateAuthUI();
-      syncFromSheet();
-    }
-  }
-}
-
-function isPWAStandalone() {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true ||
-    document.referrer.includes('android-app://')
-  );
 }
 
 function maybeEnableAuth() {
-  // Button is rendered by Google, no need to enable it
   if (gapiInited && gisInited) {
-    // Check for existing session
-    var savedUser = localStorage.getItem("baby-checklist-user");
-    if (savedUser) {
-      try {
-        currentUser = JSON.parse(savedUser);
-        // Request token silently to access Sheets
-        requestSheetsAccess();
-      } catch (e) {
-        localStorage.removeItem("baby-checklist-user");
-      }
-    }
-    
-    // Check if Google button rendered, show fallback if not
-    checkGoogleButtonRendered();
-  }
-}
-
-function checkGoogleButtonRendered() {
-  // Wait a bit for Google's button to render
-  setTimeout(function() {
-    var container = document.getElementById("googleSignInContainer");
-    var fallbackBtn = document.getElementById("fallbackSignInBtn");
-    
-    // If container is empty or has no visible content, show fallback
-    if (container && fallbackBtn) {
-      var hasGoogleButton = container.querySelector('iframe') || 
-                            container.querySelector('div[role="button"]') ||
-                            container.children.length > 0;
-      
-      if (!hasGoogleButton) {
-        console.log("Google Sign-In button did not render, showing fallback");
-        fallbackBtn.style.display = "flex";
-      }
-    }
-  }, 1500); // Give Google 1.5 seconds to render
-}
-
-function fallbackSignIn() {
-  // Directly trigger the OAuth flow using the token client
-  if (!tokenClient) {
-    console.error("Token client not initialized");
-    return;
-  }
-  
-  // For PWA, use redirect flow; otherwise use popup
-  if (isPWAStandalone()) {
-    // Redirect flow - will navigate away and return with token
-    tokenClient.requestAccessToken({ prompt: "consent" });
-  } else {
-    // Popup flow with consent prompt
-    tokenClient.requestAccessToken({ prompt: "consent" });
+    var btn = document.getElementById("googleSignInBtn");
+    if (btn) btn.disabled = false;
   }
 }
 
 // ── Auth Flow ─────────────────────────────────────────────────
 
-function handleCredentialResponse(response) {
-  // Decode the JWT credential to get user info
-  var payload = parseJwt(response.credential);
-  if (!payload) {
-    console.error("Failed to parse credential");
-    return;
-  }
-
-  currentUser = {
-    email: payload.email,
-    name: payload.name,
-    picture: payload.picture,
-    sub: payload.sub,
-  };
-  localStorage.setItem("baby-checklist-user", JSON.stringify(currentUser));
-
-  // Request Sheets API access
-  requestSheetsAccess();
-}
-
-function requestSheetsAccess() {
+function authorizeGoogle() {
   if (!tokenClient) return;
-
-  // Check if we already have a valid token
-  if (gapi.client.getToken() !== null) {
-    state.isOnline = true;
-    updateAuthUI();
-    syncFromSheet();
+  if (gapi.client.getToken() === null) {
+    tokenClient.requestAccessToken({ prompt: "consent" });
   } else {
-    // Request access token - will use redirect in PWA mode, popup otherwise
     tokenClient.requestAccessToken({ prompt: "" });
   }
 }
 
-function handleTokenCallback(resp) {
+function handleAuthCallback(resp) {
   if (resp.error) {
-    console.error("Token error:", resp);
-    // Still show the app, but in degraded mode
-    if (currentUser) {
-      state.isOnline = false;
-      updateAuthUI();
-      render();
-    }
+    console.error("Auth error:", resp);
     return;
   }
 
-  state.isOnline = true;
-  updateAuthUI();
-  syncFromSheet();
-}
+  var token = gapi.client.getToken();
+  if (!token) return;
 
-function parseJwt(token) {
-  try {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-}
-
-function authorizeGoogle() {
-  // Legacy function - kept for compatibility
-  requestSheetsAccess();
+  fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: { Authorization: "Bearer " + token.access_token },
+  })
+    .then(function (r) {
+      return r.json();
+    })
+    .then(function (userInfo) {
+      currentUser = userInfo;
+      localStorage.setItem(
+        "baby-checklist-user",
+        JSON.stringify(currentUser),
+      );
+      state.isOnline = true;
+      updateAuthUI();
+      syncFromSheet();
+    })
+    .catch(function (err) {
+      console.error("Failed to get user info:", err);
+    });
 }
 
 function signOut() {
