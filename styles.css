@@ -904,10 +904,17 @@ body {
 }
 
 .auth-subtitle {
-  font-size: 0.85rem;
   color: var(--color-text-secondary);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
   line-height: 1.5;
+}
+
+#googleSignInContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  min-height: 44px;
 }
 
 .btn-google {

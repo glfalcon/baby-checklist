@@ -155,61 +155,128 @@ function gapiLoaded() {
 }
 
 function gisLoaded() {
+  // Initialize Google Sign-In with the new Identity Services API
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CONFIG.clientId,
+    callback: handleCredentialResponse,
+    auto_select: true,
+    context: 'signin',
+  });
+
+  // Render the Google Sign-In button
+  google.accounts.id.renderButton(
+    document.getElementById("googleSignInContainer"),
+    {
+      theme: "outline",
+      size: "large",
+      width: 280,
+      text: "signin_with",
+      shape: "rectangular",
+    }
+  );
+
+  // Also set up token client for Sheets API access
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CONFIG.clientId,
     scope: GOOGLE_CONFIG.scopes,
-    callback: handleAuthCallback,
+    callback: handleTokenCallback,
   });
+
   gisInited = true;
   maybeEnableAuth();
 }
 
 function maybeEnableAuth() {
+  // Button is rendered by Google, no need to enable it
   if (gapiInited && gisInited) {
-    var btn = document.getElementById("googleSignInBtn");
-    if (btn) btn.disabled = false;
+    // Check for existing session
+    var savedUser = localStorage.getItem("baby-checklist-user");
+    if (savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+        // Request token silently to access Sheets
+        requestSheetsAccess();
+      } catch (e) {
+        localStorage.removeItem("baby-checklist-user");
+      }
+    }
   }
 }
 
 // ── Auth Flow ─────────────────────────────────────────────────
 
-function authorizeGoogle() {
+function handleCredentialResponse(response) {
+  // Decode the JWT credential to get user info
+  var payload = parseJwt(response.credential);
+  if (!payload) {
+    console.error("Failed to parse credential");
+    return;
+  }
+
+  currentUser = {
+    email: payload.email,
+    name: payload.name,
+    picture: payload.picture,
+    sub: payload.sub,
+  };
+  localStorage.setItem("baby-checklist-user", JSON.stringify(currentUser));
+
+  // Now request access token for Sheets API
+  requestSheetsAccess();
+}
+
+function requestSheetsAccess() {
   if (!tokenClient) return;
-  if (gapi.client.getToken() === null) {
-    tokenClient.requestAccessToken({ prompt: "consent" });
+
+  // Check if we already have a valid token
+  if (gapi.client.getToken() !== null) {
+    state.isOnline = true;
+    updateAuthUI();
+    syncFromSheet();
   } else {
+    // Request access token (this may show a popup, but it's smaller/faster)
     tokenClient.requestAccessToken({ prompt: "" });
   }
 }
 
-function handleAuthCallback(resp) {
+function handleTokenCallback(resp) {
   if (resp.error) {
-    console.error("Auth error:", resp);
+    console.error("Token error:", resp);
+    // Still show the app, but in degraded mode
+    if (currentUser) {
+      state.isOnline = false;
+      updateAuthUI();
+      render();
+    }
     return;
   }
 
-  var token = gapi.client.getToken();
-  if (!token) return;
+  state.isOnline = true;
+  updateAuthUI();
+  syncFromSheet();
+}
 
-  fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { Authorization: "Bearer " + token.access_token },
-  })
-    .then(function (r) {
-      return r.json();
-    })
-    .then(function (userInfo) {
-      currentUser = userInfo;
-      localStorage.setItem(
-        "baby-checklist-user",
-        JSON.stringify(currentUser),
-      );
-      state.isOnline = true;
-      updateAuthUI();
-      syncFromSheet();
-    })
-    .catch(function (err) {
-      console.error("Failed to get user info:", err);
-    });
+function parseJwt(token) {
+  try {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+function authorizeGoogle() {
+  // Legacy function - kept for compatibility
+  requestSheetsAccess();
 }
 
 function signOut() {
