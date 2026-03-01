@@ -131,7 +131,7 @@ function gisLoaded() {
 
   // Set up token client - use redirect mode for PWA compatibility
   var uxMode = isPWAStandalone() ? "redirect" : "popup";
-  
+
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CONFIG.clientId,
     scope: GOOGLE_CONFIG.scopes,
@@ -142,7 +142,7 @@ function gisLoaded() {
 
   gisInited = true;
   maybeEnableAuth();
-  
+
   // Check if we're returning from a redirect auth flow
   checkRedirectAuth();
 }
@@ -154,17 +154,17 @@ function checkRedirectAuth() {
     var params = new URLSearchParams(hash.substring(1));
     var accessToken = params.get("access_token");
     var expiresIn = params.get("expires_in");
-    
+
     if (accessToken) {
       // Set the token manually
       gapi.client.setToken({
         access_token: accessToken,
         expires_in: expiresIn,
       });
-      
+
       // Clear the hash from URL
       history.replaceState(null, "", window.location.pathname);
-      
+
       // Continue with auth
       state.isOnline = true;
       updateAuthUI();
@@ -195,6 +195,46 @@ function maybeEnableAuth() {
         localStorage.removeItem("baby-checklist-user");
       }
     }
+    
+    // Check if Google button rendered, show fallback if not
+    checkGoogleButtonRendered();
+  }
+}
+
+function checkGoogleButtonRendered() {
+  // Wait a bit for Google's button to render
+  setTimeout(function() {
+    var container = document.getElementById("googleSignInContainer");
+    var fallbackBtn = document.getElementById("fallbackSignInBtn");
+    
+    // If container is empty or has no visible content, show fallback
+    if (container && fallbackBtn) {
+      var hasGoogleButton = container.querySelector('iframe') || 
+                            container.querySelector('div[role="button"]') ||
+                            container.children.length > 0;
+      
+      if (!hasGoogleButton) {
+        console.log("Google Sign-In button did not render, showing fallback");
+        fallbackBtn.style.display = "flex";
+      }
+    }
+  }, 1500); // Give Google 1.5 seconds to render
+}
+
+function fallbackSignIn() {
+  // Directly trigger the OAuth flow using the token client
+  if (!tokenClient) {
+    console.error("Token client not initialized");
+    return;
+  }
+  
+  // For PWA, use redirect flow; otherwise use popup
+  if (isPWAStandalone()) {
+    // Redirect flow - will navigate away and return with token
+    tokenClient.requestAccessToken({ prompt: "consent" });
+  } else {
+    // Popup flow with consent prompt
+    tokenClient.requestAccessToken({ prompt: "consent" });
   }
 }
 
