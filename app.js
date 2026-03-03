@@ -85,6 +85,18 @@ function getAllItems() {
     });
 }
 
+// ── getItemById — find item by ID from all items ───
+
+function getItemById(id) {
+  var allItems = getAllItems();
+  for (var i = 0; i < allItems.length; i++) {
+    if (allItems[i].id === id) {
+      return allItems[i];
+    }
+  }
+  return null;
+}
+
 // ── Storage Adapter (localStorage) ────────────────────────────
 
 var Storage = {
