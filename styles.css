@@ -767,6 +767,60 @@ body {
   transition: all var(--transition);
 }
 
+/* Quantity Stepper */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.qty-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.qty-btn:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.qty-btn:active {
+  transform: scale(0.92);
+}
+
+.qty-value {
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Mobile touch targets for quantity stepper */
+@media (max-width: 600px) {
+  .qty-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+}
+
 .item-qty {
   font-size: 0.7rem;
   font-weight: 600;
@@ -1863,6 +1917,89 @@ body,
   color: var(--color-text-secondary);
   display: block;
   margin-top: 2px;
+}
+
+/* ── Move Options ─────────────────────────────────────────── */
+
+.status-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 8px 16px;
+}
+
+.status-option-arrow {
+  margin-left: auto;
+  opacity: 0.5;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.move-options-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.back-option {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.back-option .status-option-icon {
+  font-size: 20px;
+}
+
+.move-cat-option:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Move Confirmation Dialog */
+.move-confirm {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.move-confirm-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: var(--color-text);
+}
+
+.move-confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.move-confirm-cancel,
+.move-confirm-ok {
+  padding: 12px 28px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition);
+}
+
+.move-confirm-cancel {
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+}
+
+.move-confirm-cancel:hover {
+  background: var(--color-border);
+}
+
+.move-confirm-ok {
+  background: var(--color-accent);
+  color: white;
+}
+
+.move-confirm-ok:hover {
+  filter: brightness(1.1);
 }
 
 /* Status badge on drawer items */

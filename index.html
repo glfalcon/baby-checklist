@@ -241,7 +241,7 @@
         <span class="status-sheet-title" id="statusSheetTitle">Set Status</span>
         <button class="status-sheet-close" onclick="closeStatusSheet()">✕</button>
       </div>
-      <div class="status-sheet-options">
+      <div class="status-sheet-options" id="statusSheetOptions">
         <button class="status-option" data-status="in-progress" onclick="setItemStatus('in-progress')">
           <span class="status-option-icon">🟡</span>
           <span class="status-option-label">In Progress</span>
@@ -257,6 +257,30 @@
           <span class="status-option-label">Clear Status</span>
           <span class="status-option-desc">Reset to To Do</span>
         </button>
+        <div class="status-divider"></div>
+        <button class="status-option" id="moveToOption" onclick="showMoveOptions()">
+          <span class="status-option-icon">📂</span>
+          <span class="status-option-label">Move to...</span>
+          <span class="status-option-arrow">›</span>
+        </button>
+      </div>
+
+      <!-- Move sub-options (hidden by default) -->
+      <div class="move-options-container" id="moveOptionsContainer" style="display:none">
+        <button class="status-option back-option" onclick="hideMoveOptions()">
+          <span class="status-option-icon">‹</span>
+          <span class="status-option-label">Back</span>
+        </button>
+        <div id="moveOptionsList"></div>
+      </div>
+
+      <!-- Move confirmation dialog -->
+      <div class="move-confirm" id="moveConfirm" style="display:none">
+        <p class="move-confirm-text" id="moveConfirmText">Move to Feeding?</p>
+        <div class="move-confirm-buttons">
+          <button class="move-confirm-cancel" onclick="cancelMove()">Cancel</button>
+          <button class="move-confirm-ok" onclick="confirmMove()">Move</button>
+        </div>
       </div>
     </div>
 

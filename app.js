@@ -69,12 +69,20 @@ var state = {
 
 var dom = {};
 
-// ── getAllItems — merges built-in + custom, filters deleted ───
+// ── getAllItems — merges built-in + custom, filters deleted, applies moves ───
 
 function getAllItems() {
-  return CHECKLIST_DATA.concat(customItems).filter(function (item) {
-    return !deletedItemIds[item.id];
-  });
+  var moved = JSON.parse(localStorage.getItem('movedItems') || '{}');
+  return CHECKLIST_DATA.concat(customItems)
+    .filter(function (item) {
+      return !deletedItemIds[item.id];
+    })
+    .map(function (item) {
+      if (moved[item.id]) {
+        return Object.assign({}, item, { category: moved[item.id] });
+      }
+      return item;
+    });
 }
 
 // ── Storage Adapter (localStorage) ────────────────────────────
@@ -83,6 +91,7 @@ var Storage = {
   _prefix: "baby-checklist-",
   _statusPrefix: "baby-checklist-status-",
   _completedAtPrefix: "baby-checklist-completed-",
+  _quantityPrefix: "baby-checklist-qty-",
 
   isChecked: function (id) {
     return localStorage.getItem(this._prefix + id) === "1";
@@ -126,6 +135,23 @@ var Storage = {
       localStorage.setItem(this._completedAtPrefix + id, date);
     } else {
       localStorage.removeItem(this._completedAtPrefix + id);
+    }
+  },
+
+  // Quantity: custom quantity override
+  getQuantity: function (id, defaultQty) {
+    var stored = localStorage.getItem(this._quantityPrefix + id);
+    if (stored !== null) {
+      return parseInt(stored, 10);
+    }
+    return defaultQty || 1;
+  },
+
+  setQuantity: function (id, qty) {
+    if (qty && qty > 0) {
+      localStorage.setItem(this._quantityPrefix + id, qty.toString());
+    } else {
+      localStorage.removeItem(this._quantityPrefix + id);
     }
   },
 
@@ -666,6 +692,32 @@ function removeItem(id) {
   }
 }
 
+// ── Quantity Stepper ─────────────────────────────────────────────
+
+function incrementQty(id) {
+  var item = getItemById(id);
+  if (!item) return;
+  var currentQty = Storage.getQuantity(id, item.quantity);
+  Storage.setQuantity(id, currentQty + 1);
+  renderDrawer();
+  saveQuantityToSheet(id, currentQty + 1);
+}
+
+function decrementQty(id, defaultQty) {
+  var currentQty = Storage.getQuantity(id, defaultQty);
+  if (currentQty > 1) {
+    Storage.setQuantity(id, currentQty - 1);
+    renderDrawer();
+    saveQuantityToSheet(id, currentQty - 1);
+  }
+}
+
+function saveQuantityToSheet(id, qty) {
+  // TODO: Implement Google Sheets sync for quantity
+  // For now, localStorage only
+  console.log('Quantity updated:', id, qty);
+}
+
 // ── Add Item Modal ────────────────────────────────────────────
 
 function openAddModal() {
@@ -989,10 +1041,18 @@ function buildDrawerItemHTML(item, checked) {
       ? "Nice to Have"
       : item.priority.charAt(0).toUpperCase() +
         item.priority.slice(1);
-  var qtyLabel =
-    item.quantity > 1
-      ? '<span class="item-qty">×' + item.quantity + "</span>"
-      : "";
+
+  // Get custom quantity or fall back to item default
+  var currentQty = Storage.getQuantity(item.id, item.quantity);
+  var qtyLabel = "";
+  if (item.quantity > 1 || currentQty > 1) {
+    qtyLabel = '<span class="qty-stepper" onclick="event.stopPropagation()">' +
+      '<button class="qty-btn qty-minus" onclick="decrementQty(\'' + item.id + '\', ' + item.quantity + ')" aria-label="Decrease quantity">−</button>' +
+      '<span class="qty-value">' + currentQty + '</span>' +
+      '<button class="qty-btn qty-plus" onclick="incrementQty(\'' + item.id + '\')" aria-label="Increase quantity">+</button>' +
+      '</span>';
+  }
+
   var newBadge = isNewItem(item)
     ? '<span class="new-badge" aria-label="Recently added">NEW</span>'
     : "";
@@ -1449,6 +1509,13 @@ var longPressTriggered = false;
 function openStatusSheet(itemId, itemName) {
   statusSheetItemId = itemId;
   document.getElementById("statusSheetTitle").textContent = itemName || "Set Status";
+
+  // Reset to main options (hide move sub-menu and confirm)
+  document.getElementById('moveOptionsContainer').style.display = 'none';
+  document.getElementById('moveConfirm').style.display = 'none';
+  document.getElementById('statusSheetOptions').style.display = 'block';
+  pendingMoveCategory = null;
+
   document.getElementById("statusSheetOverlay").classList.add("active");
   document.getElementById("statusSheet").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -1479,6 +1546,95 @@ function setItemStatusDone() {
   }
   closeStatusSheet();
   render();
+}
+
+// ── Move Item Functions ─────────────────────────────────────────
+
+var pendingMoveCategory = null;
+var movedItems = JSON.parse(localStorage.getItem('movedItems') || '{}');
+
+function showMoveOptions() {
+  var item = getItemById(statusSheetItemId);
+  if (!item) return;
+
+  // Only show categories from the SAME section
+  var categories = getCategoriesForSection(item.section);
+  var html = '';
+
+  categories.forEach(function(cat) {
+    if (cat === getEffectiveCategory(item)) return; // Skip current category
+    var icon = CATEGORY_ICONS[cat] || '📦';
+    html += '<button class="status-option move-cat-option" onclick="requestMoveToCategory(\'' + cat.replace(/'/g, "\\'") + '\')">' +
+      '<span class="status-option-icon">' + icon + '</span>' +
+      '<span class="status-option-label">' + cat + '</span>' +
+    '</button>';
+  });
+
+  document.getElementById('moveOptionsList').innerHTML = html;
+  document.getElementById('statusSheetOptions').style.display = 'none';
+  document.getElementById('moveOptionsContainer').style.display = 'block';
+}
+
+function hideMoveOptions() {
+  document.getElementById('moveOptionsContainer').style.display = 'none';
+  document.getElementById('moveConfirm').style.display = 'none';
+  document.getElementById('statusSheetOptions').style.display = 'block';
+  pendingMoveCategory = null;
+}
+
+function requestMoveToCategory(newCategory) {
+  pendingMoveCategory = newCategory;
+  var icon = CATEGORY_ICONS[newCategory] || '📂';
+  document.getElementById('moveConfirmText').textContent = 'Move to ' + icon + ' ' + newCategory + '?';
+  document.getElementById('moveOptionsContainer').style.display = 'none';
+  document.getElementById('moveConfirm').style.display = 'block';
+}
+
+function cancelMove() {
+  pendingMoveCategory = null;
+  hideMoveOptions();
+}
+
+function confirmMove() {
+  if (!statusSheetItemId || !pendingMoveCategory) return;
+
+  // Store the move override
+  movedItems[statusSheetItemId] = pendingMoveCategory;
+  localStorage.setItem('movedItems', JSON.stringify(movedItems));
+
+  // Sync to Google Sheets if online
+  saveMoveToSheet(statusSheetItemId, pendingMoveCategory);
+
+  var targetCategory = pendingMoveCategory;
+  pendingMoveCategory = null;
+
+  closeStatusSheet();
+  render();
+
+  // Open the new category drawer to show where item went
+  setTimeout(function() { openDrawer(targetCategory); }, 300);
+}
+
+function saveMoveToSheet(itemId, newCategory) {
+  // TODO: Implement Google Sheets sync for moves
+  console.log('Item moved:', itemId, '->', newCategory);
+}
+
+function getEffectiveCategory(item) {
+  // Return moved category if exists, otherwise original
+  return movedItems[item.id] || item.category;
+}
+
+function getCategoriesForSection(section) {
+  // Get unique categories for a section from all items
+  var categories = [];
+  var items = CHECKLIST_DATA.concat(customItems);
+  items.forEach(function(item) {
+    if (item.section === section && categories.indexOf(item.category) === -1) {
+      categories.push(item.category);
+    }
+  });
+  return categories;
 }
 
 // Quick actions for desktop hover buttons
