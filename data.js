@@ -28,7 +28,7 @@ const CHECKLIST_DATA = [
   // -- Feeding --
   { id: "ne-001", section: "newborn-essentials", category: "Feeding", name: "Baby Bottles (various sizes)", description: "Start with 4oz for newborns, move to 8oz later", priority: "essential", quantity: 6 },
   { id: "ne-002", section: "newborn-essentials", category: "Feeding", name: "Bottle Brush Set", description: "For cleaning bottles and nipples", priority: "essential", quantity: 1 },
-  { id: "ne-003", section: "newborn-essentials", category: "Feeding", name: "Formula (if not breastfeeding)", description: "Consult pediatrician for brand recommendations", priority: "essential", quantity: 1 },
+  { id: "ne-003", section: "newborn-essentials", category: "Feeding", name: "Formula (if not breastfeeding)", description: "Consult pediatrician for brand recommendations", priority: "recommended", quantity: 1 },
   { id: "ne-004", section: "newborn-essentials", category: "Feeding", name: "Breast Pump", description: "Electric or manual depending on needs", priority: "recommended", quantity: 1 },
   { id: "ne-005", section: "newborn-essentials", category: "Feeding", name: "Nursing Pillow", description: "Supports comfortable feeding position", priority: "recommended", quantity: 1 },
   { id: "ne-006", section: "newborn-essentials", category: "Feeding", name: "Burp Cloths", description: "Keep several on hand for spit-up", priority: "essential", quantity: 10 },
